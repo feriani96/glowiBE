@@ -80,6 +80,10 @@ public class AuthController {
         if(authService.hasUserWithEmail(signupRequest.getEmail())){
             return new ResponseEntity<>("User already exists", HttpStatus.NOT_ACCEPTABLE);
         }
+        //System.out.println("Email: " + signupRequest.getEmail());
+        //System.out.println("Name: " + signupRequest.getName());
+        //System.out.println("Password: " + signupRequest.getPassword());
+
         UserDto userDto = authService.createUser(signupRequest);
         return new ResponseEntity<>(userDto, HttpStatus.OK);
     }
