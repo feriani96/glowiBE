@@ -5,6 +5,7 @@ import com.ecommerceProject.Glowi.dto.UserDto;
 import com.ecommerceProject.Glowi.entity.User;
 import com.ecommerceProject.Glowi.enums.UserRole;
 import com.ecommerceProject.Glowi.repository.UserRepository;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -35,5 +36,18 @@ public class AuthServiceImpl implements AuthService {
 
     public Boolean hasUserWithEmail(String email) {
         return userRepository.findFirstByEmail(email).isPresent();
+    }
+
+    @PostConstruct
+    public void createAdminAccount(){
+        User adminAccount = userRepository.findByRole(UserRole.ADMIN);
+        if(null == adminAccount){
+            User user = new User();
+            user.setEmail("admin@gmail.com");
+            user.setName("admin");
+            user.setRole(UserRole.ADMIN);
+            user.setPassword(new BCryptPasswordEncoder().encode("admin"));
+            userRepository.save(user);
+        }
     }
 }
