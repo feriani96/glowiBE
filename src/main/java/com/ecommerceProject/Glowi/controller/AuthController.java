@@ -1,11 +1,16 @@
 package com.ecommerceProject.Glowi.controller;
 
 import com.ecommerceProject.Glowi.dto.AuthenticationRequest;
+import com.ecommerceProject.Glowi.dto.SignupRequest;
+import com.ecommerceProject.Glowi.dto.UserDto;
 import com.ecommerceProject.Glowi.entity.User;
 import com.ecommerceProject.Glowi.repository.UserRepository;
+import com.ecommerceProject.Glowi.services.auth.AuthService;
 import com.ecommerceProject.Glowi.utils.JwtUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -29,8 +34,9 @@ public class AuthController {
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
 
-    public static final String TOKEN_PREFIX = "Bearer "; // Corrected prefix
-    public static final String HEADER_STRING = "Authorization"; // Corrected header name
+    public static final String TOKEN_PREFIX = "Bearer ";
+    public static final String HEADER_STRING = "Authorization";
+    private final AuthService authService;
 
     @PostMapping("/authenticate")
     public void createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest,
@@ -67,5 +73,14 @@ public class AuthController {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             response.getWriter().write("{\"error\": \"User not found.\"}");
         }
+    }
+
+    @PostMapping("/sign-up")
+    public ResponseEntity<?> signupUser(@RequestBody SignupRequest signupRequest){
+        if(authService.hasUserWithEmail(signupRequest.getEmail())){
+            return new ResponseEntity<>("User already exists", HttpStatus.NOT_ACCEPTABLE);
+        }
+        UserDto userDto = authService.createUser(signupRequest);
+        return new ResponseEntity<>(userDto, HttpStatus.OK);
     }
 }
