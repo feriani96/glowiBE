@@ -35,7 +35,11 @@ public class WebSecurityConfiguration {
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
-            .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
+            .cors(cors -> {
+                cors.configurationSource(corsConfigurationSource());
+            });
+
 
         return http.build();
     }
