@@ -44,15 +44,15 @@ public class AuthController {
 
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                authenticationRequest.getUsername(), authenticationRequest.getPassword()
+                authenticationRequest.getEmail(), authenticationRequest.getPassword()  // Utiliser getEmail()
             ));
         } catch (BadCredentialsException e) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("{\"error\": \"Incorrect username or password.\"}");
+            response.getWriter().write("{\"error\": \"Incorrect email or password.\"}");
             return;
         }
 
-        final UserDetails userDetails = userDetailsService.loadUserByUsername(authenticationRequest.getUsername());
+        final UserDetails userDetails = userDetailsService.loadUserByUsername(authenticationRequest.getEmail());
 
         Optional<User> optionalUser = userRepository.findFirstByEmail(userDetails.getUsername());
 
@@ -74,6 +74,7 @@ public class AuthController {
             response.getWriter().write("{\"error\": \"User not found.\"}");
         }
     }
+
 
     @PostMapping("/sign-up")
     public ResponseEntity<?> signupUser(@RequestBody SignupRequest signupRequest){
