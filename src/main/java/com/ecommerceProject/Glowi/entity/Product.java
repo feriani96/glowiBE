@@ -6,7 +6,6 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.util.List;
 
@@ -19,22 +18,21 @@ public class Product {
 
     private String name;
 
-    @Field("price")
-    private float price;
-
-    @Field("quantity")
-    private int quantity;
-
     private String description;
 
-    private List<String> availableSizes;
+    private float price;
 
-    private List<String> reviews;
+    private int quantity;
 
     private List<String> colors;
 
-    private byte[] img;
+    private List<String> availableSizes;
 
-    @JsonIgnore
-    private Category category;
+    //private List<String> reviews;
+
+
+    //private byte[] img;
+
+    //@JsonIgnore
+    //private Category category;
 }
