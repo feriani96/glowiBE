@@ -1,6 +1,5 @@
 package com.ecommerceProject.Glowi.entity;
 
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
@@ -15,24 +14,14 @@ import java.util.List;
 public class Product {
     @Id
     private String id;
-
     private String name;
-
     private String description;
-
     private float price;
-
     private int quantity;
-
     private List<String> colors;
-
     private List<String> availableSizes;
+    private String imgUrl;
+    private String categoryId;
 
-    //private List<String> reviews;
-
-
-    //private byte[] img;
-
-    //@JsonIgnore
-    //private Category category;
+    private Category category;
 }
