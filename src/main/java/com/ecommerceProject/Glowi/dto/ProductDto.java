@@ -13,6 +13,6 @@ public class ProductDto {
     private int quantity;
     private List<String> colors;
     private List<String> availableSizes;
-    private String imgUrl;
+    private List<String> imgUrls; // Pour plusieurs URLs
     private String categoryId;
 }

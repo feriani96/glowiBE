@@ -20,7 +20,7 @@ public class Product {
     private int quantity;
     private List<String> colors;
     private List<String> availableSizes;
-    private String imgUrl;
+    private List<String> imgUrls;
     private String categoryId;
 
     private Category category;

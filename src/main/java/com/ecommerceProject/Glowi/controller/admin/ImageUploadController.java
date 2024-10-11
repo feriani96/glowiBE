@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -28,7 +29,7 @@ public class ImageUploadController {
 
     @PostMapping("/upload")
     public ResponseEntity<Product> uploadImageAndProduct(
-        @RequestParam(value = "file", required = false) MultipartFile file,
+        @RequestParam(value = "files") MultipartFile[] files, // Accepter plusieurs fichiers
         @RequestParam("name") String productName,
         @RequestParam("description") String description,
         @RequestParam("price") float price,
@@ -37,13 +38,15 @@ public class ImageUploadController {
         @RequestParam("availableSizes") List<String> availableSizes,
         @RequestParam("categoryId") String categoryId) {
 
-        String imageUrl = null;
+        List<String> imageUrls = new ArrayList<>();
 
-        if (file != null && !file.isEmpty()) {
-            try {
-                imageUrl = uploadImage(file);
-            } catch (IOException e) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        for (MultipartFile file : files) {
+            if (file != null && !file.isEmpty()) {
+                try {
+                    imageUrls.add(uploadImage(file)); // Ajouter l'URL d'image à la liste
+                } catch (IOException e) {
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+                }
             }
         }
 
@@ -54,8 +57,7 @@ public class ImageUploadController {
         productDto.setQuantity(quantity);
         productDto.setColors(colors);
         productDto.setAvailableSizes(availableSizes);
-        productDto.setCategoryId(categoryId);
-        productDto.setImgUrl(imageUrl);
+        productDto.setImgUrls(imageUrls); // Utiliser la liste d'URLs
 
         Product product = adminProductService.createproduct(productDto);
 

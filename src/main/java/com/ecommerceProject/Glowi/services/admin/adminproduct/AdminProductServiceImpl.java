@@ -12,7 +12,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class AdminProductServiceImpl implements AdminProductService{
+public class AdminProductServiceImpl implements AdminProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
 
@@ -28,7 +28,7 @@ public class AdminProductServiceImpl implements AdminProductService{
         product.setQuantity(productDto.getQuantity());
         product.setColors(productDto.getColors());
         product.setAvailableSizes(productDto.getAvailableSizes());
-        product.setImgUrl(productDto.getImgUrl());
+        product.setImgUrls(productDto.getImgUrls()); // Utiliser la liste d'URLs
         product.setCategoryId(categoryId);
         product = productRepository.save(product);
         product.setCategory(category);
