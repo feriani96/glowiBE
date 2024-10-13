@@ -9,10 +9,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class AdminProductServiceImpl implements AdminProductService {
+
+
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
 
@@ -28,15 +31,37 @@ public class AdminProductServiceImpl implements AdminProductService {
         product.setQuantity(productDto.getQuantity());
         product.setColors(productDto.getColors());
         product.setAvailableSizes(productDto.getAvailableSizes());
-        product.setImgUrls(productDto.getImgUrls()); // Utiliser la liste d'URLs
+
+        product.setImgUrls(productDto.getImgUrls());
+
         product.setCategoryId(categoryId);
+        product.setCategoryName(category.getName());
         product = productRepository.save(product);
         product.setCategory(category);
         return product;
     }
 
-    public List<Product> getAllProducts() {
-        return productRepository.findAll();
+    @Override
+    public List<ProductDto> getAllProducts() {
+        List<Product> products = productRepository.findAll();
+
+        if (products.isEmpty()) {
+            throw new RuntimeException("No products found.");
+        }
+
+        return products.stream()
+            .map(product -> {
+                Category category = categoryRepository.findById(product.getCategoryId())
+                    .orElse(null);
+
+                if (category != null) {
+                    product.setCategory(category);
+                } else {
+                    System.out.println("Category not found for product: " + product.getId());
+                }
+                return product.getDto();
+            })
+            .collect(Collectors.toList());
     }
 
     public Product getProductById(String id) {

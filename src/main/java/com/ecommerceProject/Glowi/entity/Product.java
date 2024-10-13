@@ -1,6 +1,6 @@
 package com.ecommerceProject.Glowi.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.ecommerceProject.Glowi.dto.ProductDto;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;
@@ -22,6 +22,24 @@ public class Product {
     private List<String> availableSizes;
     private List<String> imgUrls;
     private String categoryId;
+    private String categoryName;
+
 
     private Category category;
+
+    public ProductDto getDto(){
+        ProductDto productDto = new ProductDto();
+        productDto.setId(id);
+        productDto.setName(name);
+        productDto.setDescription(description);
+        productDto.setImgUrls(imgUrls);
+        productDto.setColors(colors);
+        productDto.setQuantity(quantity);
+        productDto.setPrice(price);
+        productDto.setAvailableSizes(availableSizes);
+        productDto.setCategoryId(category.getId());
+        productDto.setCategoryName(category.getName());
+
+        return productDto;
+    }
 }

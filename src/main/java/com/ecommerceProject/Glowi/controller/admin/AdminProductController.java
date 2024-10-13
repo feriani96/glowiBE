@@ -23,14 +23,17 @@ public class AdminProductController {
         return ResponseEntity.status(HttpStatus.CREATED).body(product);
     }
 
+    @GetMapping("products")
+    public ResponseEntity<List<ProductDto>> getAllProducts(){
+        return ResponseEntity.ok(adminProductService.getAllProducts());
+    }
+
+
     @GetMapping("products/{id}")
     public ResponseEntity<Product> getProductById(@PathVariable String id){
         Product product = adminProductService.getProductById(id);
         return ResponseEntity.ok(product);
     }
 
-    @GetMapping("products")
-    public ResponseEntity<List<Product>> getAllProducts(){
-        return ResponseEntity.ok(adminProductService.getAllProducts());
-    }
+
 }

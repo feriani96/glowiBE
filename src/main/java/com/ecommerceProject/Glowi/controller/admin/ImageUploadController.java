@@ -57,7 +57,7 @@ public class ImageUploadController {
         productDto.setQuantity(quantity);
         productDto.setColors(colors);
         productDto.setAvailableSizes(availableSizes);
-        productDto.setImgUrls(imageUrls); // Utiliser la liste d'URLs
+        productDto.setCategoryId(categoryId);
 
         Product product = adminProductService.createproduct(productDto);
 

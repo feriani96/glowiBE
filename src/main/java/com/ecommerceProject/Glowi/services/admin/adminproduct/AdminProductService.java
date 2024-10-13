@@ -9,7 +9,7 @@ public interface AdminProductService {
 
     Product createproduct(ProductDto productDto);
 
-    List<Product> getAllProducts();
+    List<ProductDto> getAllProducts();
 
     Product getProductById(String id);
 }
