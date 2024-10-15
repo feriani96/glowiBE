@@ -5,6 +5,7 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -21,6 +22,7 @@ public class Product {
     private List<String> colors;
     private List<String> availableSizes;
     private List<String> imgUrls;
+
     private String categoryId;
     private String categoryName;
 
@@ -32,13 +34,15 @@ public class Product {
         productDto.setId(id);
         productDto.setName(name);
         productDto.setDescription(description);
-        productDto.setImgUrls(imgUrls);
+
         productDto.setColors(colors);
         productDto.setQuantity(quantity);
         productDto.setPrice(price);
         productDto.setAvailableSizes(availableSizes);
         productDto.setCategoryId(category.getId());
         productDto.setCategoryName(category.getName());
+
+        productDto.setImages(null);
 
         return productDto;
     }
