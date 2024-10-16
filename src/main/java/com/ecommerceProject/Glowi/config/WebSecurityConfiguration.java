@@ -16,20 +16,30 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.List;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
-public class WebSecurityConfiguration {
+public class WebSecurityConfiguration implements WebMvcConfigurer {
     private final JwtRequestFilter authFilter;
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // Cette configuration permet d'accéder aux fichiers statiques dans le dossier uploads
+        registry.addResourceHandler("/uploads/**")
+            .addResourceLocations("file:uploads/");  // Chemin où les fichiers sont stockés
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/authenticate", "/sign-up", "/order/**").permitAll()
+                .requestMatchers("/uploads/**").permitAll()
                 .requestMatchers("/api/**").authenticated()
             )
             .sessionManagement(session -> session
@@ -66,4 +76,6 @@ public class WebSecurityConfiguration {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
+
+
 }

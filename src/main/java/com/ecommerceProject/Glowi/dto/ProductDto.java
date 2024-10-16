@@ -20,4 +20,5 @@ public class ProductDto {
 
     private List<MultipartFile> images;
 
+    private List<String> imageUrls;
 }

@@ -5,6 +5,7 @@ import com.ecommerceProject.Glowi.entity.Category;
 import com.ecommerceProject.Glowi.entity.Product;
 import com.ecommerceProject.Glowi.repository.CategoryRepository;
 import com.ecommerceProject.Glowi.repository.ProductRepository;
+import com.ecommerceProject.Glowi.services.image.ImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,8 +26,7 @@ public class AdminProductServiceImpl implements AdminProductService {
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
-    private static final String UPLOAD_DIR = "src/main/resources/uploads";
-
+    private final ImageService imageService;
 
     public Product createproduct(ProductDto productDto) {
         String categoryId = productDto.getCategoryId();
@@ -41,40 +41,13 @@ public class AdminProductServiceImpl implements AdminProductService {
         product.setColors(productDto.getColors());
         product.setAvailableSizes(productDto.getAvailableSizes());
 
-        // Créer le dossier de stockage d'images si nécessaire
-        Path uploadPath = Paths.get(UPLOAD_DIR);
-        if (!Files.exists(uploadPath)) {
-            try {
-                Files.createDirectories(uploadPath);  // Crée le dossier si non existant
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to create directory for file upload", e);
-            }
-        }
-
-        // Gérer l'upload des images uniquement si elles sont présentes
         if (productDto.getImages() != null && !productDto.getImages().isEmpty()) {
-            List<String> imgUrls = new ArrayList<>();
-            for (MultipartFile image : productDto.getImages()) {
-                if (!image.isEmpty()) {
-                    String fileName = UUID.randomUUID().toString() + "_" + image.getOriginalFilename();
-                    Path filePath = uploadPath.resolve(fileName);  // Résoudre le chemin complet
-
-                    try {
-                        // Sauvegarder le fichier sur le serveur
-                        Files.write(filePath, image.getBytes());
-                        // Ajouter l'URL de l'image à la liste
-                        imgUrls.add("/uploads/" + fileName);  // Utiliser un chemin relatif pour l'URL
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        throw new RuntimeException("Failed to store image", e);
-                    }
-                }
-            }
-            // Si des images ont été téléchargées, les ajouter au produit
+            List<String> imgUrls = imageService.saveImages(productDto.getImages());
             if (!imgUrls.isEmpty()) {
                 product.setImgUrls(imgUrls);  // Assurez-vous que Product a un champ imgUrls
             }
         }
+
 
         product.setCategoryId(categoryId);
         product.setCategoryName(category.getName());
@@ -101,7 +74,20 @@ public class AdminProductServiceImpl implements AdminProductService {
                 } else {
                     System.out.println("Category not found for product: " + product.getId());
                 }
-                return product.getDto();
+
+                // Créer le ProductDto
+                ProductDto productDto = product.getDto();
+
+                // Ajoute les URLs d'images avec un schéma complet
+                List<String> imgUrls = product.getImgUrls(); // Les URLs des images doivent être absolues
+                if (imgUrls != null && !imgUrls.isEmpty()) {
+                    List<String> fullImageUrls = imgUrls.stream()
+                        .map(imgUrl -> "http://localhost:8080" + imgUrl)  // Ajoute l'URL complète
+                        .collect(Collectors.toList());
+                    productDto.setImageUrls(fullImageUrls);
+                }
+
+                return productDto;
             })
             .collect(Collectors.toList());
     }
