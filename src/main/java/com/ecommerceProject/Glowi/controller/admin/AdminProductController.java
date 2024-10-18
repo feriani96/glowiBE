@@ -49,18 +49,21 @@ public class AdminProductController {
         productDto.setColors(colors);
         productDto.setAvailableSizes(availableSizes);
         productDto.setCategoryId(categoryId);
-        productDto.setImages(images); // Passer les images si elles existent
+        productDto.setImages(images);
 
-        // Appeler la méthode du service pour créer le produit
         Product createdProduct = adminProductService.createproduct(productDto);
 
-        // Retourner une réponse HTTP avec le produit créé
         return new ResponseEntity<>(createdProduct, HttpStatus.CREATED);
     }
 
     @GetMapping("products")
     public ResponseEntity<List<ProductDto>> getAllProducts(){
         return ResponseEntity.ok(adminProductService.getAllProducts());
+    }
+
+    @GetMapping("/search/{name}")
+    public ResponseEntity<List<ProductDto>> getAllProductByName(@PathVariable String name){
+        return ResponseEntity.ok(adminProductService.getAllProductByName(name));
     }
 
     @GetMapping("products/{id}")

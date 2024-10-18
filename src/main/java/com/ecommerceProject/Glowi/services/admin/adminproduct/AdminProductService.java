@@ -11,5 +11,6 @@ public interface AdminProductService {
 
     List<ProductDto> getAllProducts();
 
+    List<ProductDto> getAllProductByName(String name);
     Product getProductById(String id);
 }

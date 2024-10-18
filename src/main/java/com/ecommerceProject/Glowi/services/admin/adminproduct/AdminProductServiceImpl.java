@@ -96,4 +96,37 @@ public class AdminProductServiceImpl implements AdminProductService {
             })
             .orElseThrow(() -> new IllegalArgumentException("Product not found"));
     }
+
+    public List<ProductDto> getAllProductByName(String name) {
+        List<Product> products = productRepository.findAllByNameContaining(name);
+
+        if (products.isEmpty()) {
+            throw new RuntimeException("No products found.");
+        }
+
+        return products.stream()
+            .map(product -> {
+                Category category = categoryRepository.findById(product.getCategoryId())
+                    .orElse(null);
+
+                if (category != null) {
+                    product.setCategory(category);
+                }
+
+                // Créer le ProductDto
+                ProductDto productDto = product.getDto();
+
+                // Ajoute les URLs d'images
+                List<String> imgUrls = product.getImgUrls();
+                if (imgUrls != null && !imgUrls.isEmpty()) {
+                    List<String> fullImageUrls = imgUrls.stream()
+                        .map(imgUrl -> imgUrl)
+                        .collect(Collectors.toList());
+                    productDto.setImageUrls(fullImageUrls);
+                }
+
+                return productDto;
+            })
+            .collect(Collectors.toList());
+    }
 }
