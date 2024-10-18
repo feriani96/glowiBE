@@ -98,7 +98,8 @@ public class AdminProductServiceImpl implements AdminProductService {
     }
 
     public List<ProductDto> getAllProductByName(String name) {
-        List<Product> products = productRepository.findAllByNameContaining(name);
+        // Utiliser une expression régulière MongoDB insensible à la casse
+        List<Product> products = productRepository.findAllByNameContainingIgnoreCase(name);
 
         if (products.isEmpty()) {
             throw new RuntimeException("No products found.");
@@ -129,4 +130,5 @@ public class AdminProductServiceImpl implements AdminProductService {
             })
             .collect(Collectors.toList());
     }
+
 }
