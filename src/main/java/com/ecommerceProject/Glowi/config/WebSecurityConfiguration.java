@@ -30,8 +30,8 @@ public class WebSecurityConfiguration implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         // Cette configuration permet d'accéder aux fichiers statiques dans le dossier uploads
-        registry.addResourceHandler("/uploads/**")
-            .addResourceLocations("file:uploads/");  // Chemin où les fichiers sont stockés
+        registry.addResourceHandler("/api/images/**")
+            .addResourceLocations("file:uploads/images/");  // Chemin où les fichiers sont stockés
     }
 
     @Bean
@@ -39,6 +39,7 @@ public class WebSecurityConfiguration implements WebMvcConfigurer {
         http.csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/authenticate", "/sign-up", "/order/**").permitAll()
+                .requestMatchers("/api/images/**").permitAll()
                 .requestMatchers("/uploads/**").permitAll()
                 .requestMatchers("/api/**").authenticated()
             )

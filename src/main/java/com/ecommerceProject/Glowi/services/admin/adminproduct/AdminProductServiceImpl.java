@@ -8,21 +8,16 @@ import com.ecommerceProject.Glowi.repository.ProductRepository;
 import com.ecommerceProject.Glowi.services.image.ImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.logging.Logger;
 
 @Service
 @RequiredArgsConstructor
 public class AdminProductServiceImpl implements AdminProductService {
 
+    private static final Logger logger = Logger.getLogger(AdminProductServiceImpl.class.getName());
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
@@ -42,17 +37,18 @@ public class AdminProductServiceImpl implements AdminProductService {
         product.setAvailableSizes(productDto.getAvailableSizes());
 
         if (productDto.getImages() != null && !productDto.getImages().isEmpty()) {
-            List<String> imgUrls = imageService.saveImages(productDto.getImages());
+            List<String> imgUrls = imageService.saveImageUrls(productDto.getImages());
             if (!imgUrls.isEmpty()) {
-                product.setImgUrls(imgUrls);  // Assurez-vous que Product a un champ imgUrls
+                product.setImgUrls(imgUrls);
             }
         }
-
 
         product.setCategoryId(categoryId);
         product.setCategoryName(category.getName());
         product = productRepository.save(product);
         product.setCategory(category);
+
+        logger.info("Produit créé avec ID : " + product.getId());
         return product;
     }
 
@@ -71,18 +67,16 @@ public class AdminProductServiceImpl implements AdminProductService {
 
                 if (category != null) {
                     product.setCategory(category);
-                } else {
-                    System.out.println("Category not found for product: " + product.getId());
                 }
 
                 // Créer le ProductDto
                 ProductDto productDto = product.getDto();
 
-                // Ajoute les URLs d'images avec un schéma complet
-                List<String> imgUrls = product.getImgUrls(); // Les URLs des images doivent être absolues
+                // Ajoute les URLs d'images
+                List<String> imgUrls = product.getImgUrls();
                 if (imgUrls != null && !imgUrls.isEmpty()) {
                     List<String> fullImageUrls = imgUrls.stream()
-                        .map(imgUrl -> "http://localhost:8080" + imgUrl)  // Ajoute l'URL complète
+                        .map(imgUrl -> imgUrl)
                         .collect(Collectors.toList());
                     productDto.setImageUrls(fullImageUrls);
                 }

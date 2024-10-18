@@ -21,17 +21,17 @@ public class AdminProductController {
 
     @PostMapping("products")
     public ResponseEntity<Product> createProduct(
-    @RequestParam("name") String name,
-    @RequestParam("description") String description,
-    @RequestParam("price") float price,
-    @RequestParam("quantity") int quantity,
-    @RequestParam("colors") List<String> colors,
-    @RequestParam("availableSizes") List<String> availableSizes,
-    @RequestParam("categoryId") String categoryId,
-    @RequestParam(value = "image0", required = false) MultipartFile image0,
-    @RequestParam(value = "image1", required = false) MultipartFile image1,
-    @RequestParam(value = "image2", required = false) MultipartFile image2,
-    @RequestParam(value = "image3", required = false) MultipartFile image3){
+        @RequestParam("name") String name,
+        @RequestParam("description") String description,
+        @RequestParam("price") float price,
+        @RequestParam("quantity") int quantity,
+        @RequestParam("colors") List<String> colors,
+        @RequestParam("availableSizes") List<String> availableSizes,
+        @RequestParam("categoryId") String categoryId,
+        @RequestParam(value = "image0", required = false) MultipartFile image0,
+        @RequestParam(value = "image1", required = false) MultipartFile image1,
+        @RequestParam(value = "image2", required = false) MultipartFile image2,
+        @RequestParam(value = "image3", required = false) MultipartFile image3){
 
         // Créer une liste pour les images
         List<MultipartFile> images = new ArrayList<>();
