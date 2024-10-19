@@ -75,4 +75,23 @@ public class ImageService {
         System.out.println("Path to image: " + filePath.toString());  // Debugging line
         return filePath;
     }
+
+    // Méthode pour supprimer une image du répertoire
+    public boolean deleteImage(String fileName) {
+        Path filePath = imageDirectory.resolve(fileName).normalize();
+        try {
+            // Vérifie si le fichier existe
+            if (Files.exists(filePath)) {
+                // Supprimer l'image
+                Files.delete(filePath);
+                logger.info("Image supprimée : " + filePath.toString());
+                return true;
+            } else {
+                logger.warning("L'image n'existe pas : " + filePath.toString());
+            }
+        } catch (IOException e) {
+            logger.severe("Erreur lors de la suppression de l'image : " + e.getMessage());
+        }
+        return false;
+    }
 }

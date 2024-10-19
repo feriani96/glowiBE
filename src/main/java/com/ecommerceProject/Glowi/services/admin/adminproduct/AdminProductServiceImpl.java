@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.logging.Logger;
 
@@ -48,7 +49,7 @@ public class AdminProductServiceImpl implements AdminProductService {
         product = productRepository.save(product);
         product.setCategory(category);
 
-        logger.info("Produit créé avec ID : " + product.getId());
+        logger.info("Product created with ID: " + product.getId());
         return product;
     }
 
@@ -69,10 +70,10 @@ public class AdminProductServiceImpl implements AdminProductService {
                     product.setCategory(category);
                 }
 
-                // Créer le ProductDto
+                // Create the ProductDto
                 ProductDto productDto = product.getDto();
 
-                // Ajoute les URLs d'images
+                // Add image URLs
                 List<String> imgUrls = product.getImgUrls();
                 if (imgUrls != null && !imgUrls.isEmpty()) {
                     List<String> fullImageUrls = imgUrls.stream()
@@ -98,7 +99,6 @@ public class AdminProductServiceImpl implements AdminProductService {
     }
 
     public List<ProductDto> getAllProductByName(String name) {
-        // Utiliser une expression régulière MongoDB insensible à la casse
         List<Product> products = productRepository.findAllByNameContainingIgnoreCase(name);
 
         if (products.isEmpty()) {
@@ -114,10 +114,10 @@ public class AdminProductServiceImpl implements AdminProductService {
                     product.setCategory(category);
                 }
 
-                // Créer le ProductDto
+                // Create the ProductDto
                 ProductDto productDto = product.getDto();
 
-                // Ajoute les URLs d'images
+                // Add image URLs
                 List<String> imgUrls = product.getImgUrls();
                 if (imgUrls != null && !imgUrls.isEmpty()) {
                     List<String> fullImageUrls = imgUrls.stream()
@@ -131,4 +131,33 @@ public class AdminProductServiceImpl implements AdminProductService {
             .collect(Collectors.toList());
     }
 
+    public boolean deleteProduct(String id) {
+        Optional<Product> optionalProduct = productRepository.findById(id);
+        if (optionalProduct.isPresent()) {
+            Product product = optionalProduct.get();
+
+            // Delete the images associated with the product
+            if (product.getImgUrls() != null && !product.getImgUrls().isEmpty()) {
+                // Iterate through the image URLs and delete them via ImageService
+                for (String imgUrl : product.getImgUrls()) {
+                    // Extract the file name from the URL (e.g., "imageName.jpg")
+                    String fileName = imgUrl.substring(imgUrl.lastIndexOf("/") + 1);
+                    boolean imageDeleted = imageService.deleteImage(fileName);
+                    if (imageDeleted) {
+                        logger.info("Image deleted: " + fileName);
+                    } else {
+                        logger.warning("Image could not be deleted: " + fileName);
+                    }
+                }
+            }
+
+            // Delete the product from the database
+            productRepository.deleteById(id);
+            logger.info("Product successfully deleted: " + id);
+            return true;
+        } else {
+            logger.warning("Product not found with ID: " + id);
+            return false;
+        }
+    }
 }
