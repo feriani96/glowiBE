@@ -29,36 +29,38 @@ public class WebSecurityConfiguration implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Cette configuration permet d'accéder aux fichiers statiques dans le dossier uploads
+        // Cette configuration permet d'accéder aux fichiers statiques dans le dossier
+        // uploads
         registry.addResourceHandler("/api/images/**")
-            .addResourceLocations("file:uploads/images/");  // Chemin où les fichiers sont stockés
+                .addResourceLocations("file:uploads/images/"); // Chemin où les fichiers sont stockés
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/authenticate", "/sign-up", "/order/**").permitAll()
-                .requestMatchers("/api/images/**").permitAll()
-                .requestMatchers("/uploads/**").permitAll()
-                .requestMatchers("/api/admin/**").permitAll()
-                .requestMatchers("/api/**").authenticated()
-            )
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
-            .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
-            .cors(cors -> {
-                cors.configurationSource(corsConfigurationSource());
-            });
-
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/authenticate", "/sign-up", "/order/**").permitAll()
+                        .requestMatchers("/api/images/**").permitAll()
+                        .requestMatchers("/uploads/**").permitAll()
+                        .requestMatchers("/api/admin/**").permitAll()
+                        .requestMatchers("/api/**").authenticated())
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
+                .cors(cors -> {
+                    cors.configurationSource(corsConfigurationSource());
+                });
 
         return http.build();
     }
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:4200"));
+        // configuration.setAllowedOrigins(List.of("*")); // Allow all origins
+        // temporarily
+        configuration.setAllowedOrigins(List.of("http://localhost:4200", "http://localhost:8080"));
+
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
         configuration.setAllowCredentials(true);
@@ -67,7 +69,6 @@ public class WebSecurityConfiguration implements WebMvcConfigurer {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
-
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -78,6 +79,5 @@ public class WebSecurityConfiguration implements WebMvcConfigurer {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
-
 
 }
