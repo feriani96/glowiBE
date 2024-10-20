@@ -22,7 +22,21 @@ public class CartController {
 
     @GetMapping("cart/{userId}")
     public ResponseEntity<?> getCartByUserId(@PathVariable String userId) {
-        OrderDto orderDto = cartService.getCartByUserId(userId);
-        return ResponseEntity.status(HttpStatus.OK).body(orderDto);
+        try {
+            OrderDto orderDto = cartService.getCartByUserId(userId);
+
+            if (orderDto != null && !orderDto.getCartItems().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.OK).body(orderDto);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No items found in cart for this user.");
+            }
+        } catch (Exception e) {
+            // Log the exception details (optional)
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while fetching the cart.");
+        }
     }
+
+
+
+
 }

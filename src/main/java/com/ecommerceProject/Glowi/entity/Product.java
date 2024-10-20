@@ -38,8 +38,8 @@ public class Product {
         productDto.setQuantity(quantity);
         productDto.setPrice(price);
         productDto.setAvailableSizes(availableSizes);
+        productDto.setImageUrls(imgUrls);
 
-        // Gérer le cas où category est null
         productDto.setCategoryId(category != null ? category.getId() : null);
         productDto.setCategoryName(category != null ? category.getName() : null);
         productDto.setImages(null);

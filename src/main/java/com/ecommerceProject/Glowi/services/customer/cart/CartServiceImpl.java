@@ -92,9 +92,26 @@ public class CartServiceImpl implements CartService {
         return cartItem;
     }
 
-    public OrderDto getCartByUserId(String userId){
+    @Override
+    public OrderDto getCartByUserId(String userId) {
         Order activeOrder = orderRepository.findByUserIdAndOrderStatus(userId, OrderStatus.Pending);
-        List<CartItemsDto> cartItemsDtosList = activeOrder.getCartItems().stream().map(CartItems::getCartDto).collect(Collectors.toList());
+
+        if (activeOrder == null) {
+            throw new RuntimeException("No active order found for user");
+        }
+
+        List<CartItems> cartItems = cartItemsRepository.findByOrderId(activeOrder.getId());
+
+        List<CartItemsDto> cartItemsDtosList = cartItems.stream()
+            .map(cartItem -> {
+                CartItemsDto dto = cartItem.getCartDto();
+                if (dto.getImageUrls() != null && !dto.getImageUrls().isEmpty()) {
+                    // Assurez-vous de récupérer uniquement la première image
+                    dto.setMainImageUrl(dto.getImageUrls().get(0));
+                }
+                return dto;
+            })
+            .collect(Collectors.toList());
 
         OrderDto orderDto = new OrderDto();
         orderDto.setAmount(activeOrder.getAmount());
@@ -102,11 +119,9 @@ public class CartServiceImpl implements CartService {
         orderDto.setOrderStatus(activeOrder.getOrderStatus());
         orderDto.setDiscount(activeOrder.getDiscount());
         orderDto.setTotalAmount(activeOrder.getTotalAmount());
-
         orderDto.setCartItems(cartItemsDtosList);
 
         return orderDto;
-
-
     }
+
 }
