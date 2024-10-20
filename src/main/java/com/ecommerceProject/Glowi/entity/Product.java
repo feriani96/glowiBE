@@ -2,6 +2,7 @@ package com.ecommerceProject.Glowi.entity;
 
 import com.ecommerceProject.Glowi.dto.ProductDto;
 import lombok.Data;
+import lombok.NonNull;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -16,7 +17,7 @@ public class Product {
     private String id;
     private String name;
     private String description;
-    private float price;
+    private Float price;
     private int quantity;
     private List<String> colors;
     private List<String> availableSizes;
@@ -25,22 +26,22 @@ public class Product {
     private String categoryId;
     private String categoryName;
 
-
     private Category category;
 
-    public ProductDto getDto(){
+
+    public ProductDto getDto() {
         ProductDto productDto = new ProductDto();
         productDto.setId(id);
         productDto.setName(name);
         productDto.setDescription(description);
-
         productDto.setColors(colors);
         productDto.setQuantity(quantity);
         productDto.setPrice(price);
         productDto.setAvailableSizes(availableSizes);
-        productDto.setCategoryId(category.getId());
-        productDto.setCategoryName(category.getName());
 
+        // Gérer le cas où category est null
+        productDto.setCategoryId(category != null ? category.getId() : null);
+        productDto.setCategoryName(category != null ? category.getName() : null);
         productDto.setImages(null);
 
         return productDto;

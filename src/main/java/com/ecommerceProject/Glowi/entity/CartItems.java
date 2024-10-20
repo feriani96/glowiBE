@@ -15,11 +15,10 @@ public class CartItems {
     @Id
     private String id;
 
-    private float price;
+    private Float price;
 
     private int quantity;
 
-    @DBRef
     private Product product;
 
     @DBRef
@@ -27,5 +26,7 @@ public class CartItems {
 
     @DBRef
     private Order order;
+
+
 
 }

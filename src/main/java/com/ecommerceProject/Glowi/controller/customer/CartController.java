@@ -1,6 +1,5 @@
 package com.ecommerceProject.Glowi.controller.customer;
 
-
 import com.ecommerceProject.Glowi.dto.AddProductInCartDto;
 import com.ecommerceProject.Glowi.services.customer.cart.CartService;
 import lombok.RequiredArgsConstructor;
@@ -15,11 +14,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class CartController {
 
-    private CartService cartService;
+    private final CartService cartService;
 
-    @PostMapping("/cart")
-    public ResponseEntity<?> addProductToCart(@RequestBody AddProductInCartDto addProductInCartDto){
+    @PostMapping("cart")
+    public ResponseEntity<?> addProductToCart(@RequestBody AddProductInCartDto addProductInCartDto) {
         return cartService.addProductToCart(addProductInCartDto);
-
     }
 }

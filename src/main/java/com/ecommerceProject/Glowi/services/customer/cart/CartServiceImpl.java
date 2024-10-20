@@ -15,61 +15,76 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.Optional;
 
 @Service
 public class CartServiceImpl implements CartService {
-
     @Autowired
     private OrderRepository orderRepository;
-
     @Autowired
     private UserRepository userRepository;
-
     @Autowired
     private CartItemsRepository cartItemsRepository;
-
     @Autowired
     private ProductRepository productRepository;
 
     public ResponseEntity<?> addProductToCart(AddProductInCartDto addProductInCartDto) {
-        // Chercher la commande active (Pending) pour l'utilisateur
-        Order activeOrder = orderRepository.findByUserIdAndOrderStatus(addProductInCartDto.getUserId(), OrderStatus.Pending);
+        User user = userRepository.findById(addProductInCartDto.getUserId())
+            .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Chercher si le produit est déjà dans le panier
-        Optional<CartItems> optionalCartItems = cartItemsRepository.findByProductIdAndOrderIdAndUserId(
-            addProductInCartDto.getProductId(), activeOrder.getId(), addProductInCartDto.getUserId());
-
-        // Si le produit est déjà dans le panier, retourner un conflit
-        if (optionalCartItems.isPresent()) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
-        } else {
-            Optional<Product> optionalProduct = productRepository.findById(addProductInCartDto.getProductId());
-            Optional<User> optionalUser = userRepository.findById(addProductInCartDto.getUserId());
-
-            if (optionalProduct.isPresent() && optionalUser.isPresent()) {
-                CartItems cart = new CartItems();
-                cart.setProduct(optionalProduct.get());
-                cart.setPrice(optionalProduct.get().getPrice());
-                cart.setQuantity(1);
-                cart.setUser(optionalUser.get());
-                cart.setOrder(activeOrder);
-
-                CartItems updatedCart = cartItemsRepository.save(cart);
-
-                // Convertir le prix de float en long avant de l'ajouter à totalAmount et amount
-                long priceAsLong = (long) cart.getPrice(); // Conversion explicite de float en long
-
-                activeOrder.setTotalAmount(activeOrder.getTotalAmount() + priceAsLong);
-                activeOrder.setAmount(activeOrder.getAmount() + priceAsLong);
-                activeOrder.getCartItems().add(cart);
-
-                orderRepository.save(activeOrder);
-
-                return ResponseEntity.status(HttpStatus.CREATED).body(cart);
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User or Product not found");
-            }
+        Order activeOrder = orderRepository.findByUserIdAndOrderStatus(user.getId(), OrderStatus.Pending);
+        if (activeOrder == null) {
+            activeOrder = createNewOrder(user);
         }
+
+        Optional<CartItems> optionalCartItems = cartItemsRepository.findByProductIdAndOrderIdAndUserId(
+            addProductInCartDto.getProductId(), activeOrder.getId(), user.getId());
+
+        if (optionalCartItems.isPresent()) {
+            CartItems existingCartItem = optionalCartItems.get();
+            existingCartItem.setQuantity(existingCartItem.getQuantity() + 1);
+            cartItemsRepository.save(existingCartItem);
+            updateOrderTotal(activeOrder, Math.round(existingCartItem.getPrice()));
+            return ResponseEntity.status(HttpStatus.OK).body(existingCartItem);
+        }
+
+        Product product = productRepository.findById(addProductInCartDto.getProductId())
+            .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        CartItems cartItem = createCartItem(activeOrder, product);
+        cartItemsRepository.save(cartItem);
+        long priceAsLong = Math.round(product.getPrice());
+
+        updateOrderTotal(activeOrder, priceAsLong);
+        orderRepository.save(activeOrder);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(cartItem);
+    }
+
+    private Order createNewOrder(User user) {
+        Order newOrder = new Order();
+        newOrder.setUser(user);
+        newOrder.setOrderStatus(OrderStatus.Pending);
+        newOrder.setTotalAmount(0L);
+        newOrder.setAmount(0L);
+        newOrder.setDate(new Date());
+        return orderRepository.save(newOrder);
+    }
+
+    private void updateOrderTotal(Order order, long price) {
+        order.setTotalAmount(order.getTotalAmount() + price);
+        order.setAmount(order.getAmount() + price);
+    }
+
+    private CartItems createCartItem(Order order, Product product) {
+        CartItems cartItem = new CartItems();
+        cartItem.setProduct(product);
+        cartItem.setPrice(product.getPrice());
+        cartItem.setQuantity(1);
+        cartItem.setOrder(order);
+
+
+        return cartItem;
     }
 }
