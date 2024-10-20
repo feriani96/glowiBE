@@ -1,6 +1,8 @@
 package com.ecommerceProject.Glowi.services.customer.cart;
 
 import com.ecommerceProject.Glowi.dto.AddProductInCartDto;
+import com.ecommerceProject.Glowi.dto.CartItemsDto;
+import com.ecommerceProject.Glowi.dto.OrderDto;
 import com.ecommerceProject.Glowi.entity.CartItems;
 import com.ecommerceProject.Glowi.entity.Order;
 import com.ecommerceProject.Glowi.entity.Product;
@@ -16,7 +18,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class CartServiceImpl implements CartService {
@@ -86,5 +90,23 @@ public class CartServiceImpl implements CartService {
 
 
         return cartItem;
+    }
+
+    public OrderDto getCartByUserId(String userId){
+        Order activeOrder = orderRepository.findByUserIdAndOrderStatus(userId, OrderStatus.Pending);
+        List<CartItemsDto> cartItemsDtosList = activeOrder.getCartItems().stream().map(CartItems::getCartDto).collect(Collectors.toList());
+
+        OrderDto orderDto = new OrderDto();
+        orderDto.setAmount(activeOrder.getAmount());
+        orderDto.setId(activeOrder.getId());
+        orderDto.setOrderStatus(activeOrder.getOrderStatus());
+        orderDto.setDiscount(activeOrder.getDiscount());
+        orderDto.setTotalAmount(activeOrder.getTotalAmount());
+
+        orderDto.setCartItems(cartItemsDtosList);
+
+        return orderDto;
+
+
     }
 }

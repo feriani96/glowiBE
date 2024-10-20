@@ -1,6 +1,7 @@
 package com.ecommerceProject.Glowi.entity;
 
 
+import com.ecommerceProject.Glowi.dto.CartItemsDto;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;
@@ -27,6 +28,19 @@ public class CartItems {
     @DBRef
     private Order order;
 
+
+    public CartItemsDto getCartDto(){
+        CartItemsDto cartItemsDto = new CartItemsDto();
+        cartItemsDto.setId(id);
+        cartItemsDto.setPrice(price);
+        cartItemsDto.setProductId(product.getId());
+        cartItemsDto.setQuantity(quantity);
+        cartItemsDto.setUserId(user.getId());
+        cartItemsDto.setProductName(product.getName());
+        cartItemsDto.setImages(product.getDto().getImages());
+
+        return cartItemsDto;
+    }
 
 
 }

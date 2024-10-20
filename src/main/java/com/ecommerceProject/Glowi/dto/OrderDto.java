@@ -1,21 +1,17 @@
-package com.ecommerceProject.Glowi.entity;
+package com.ecommerceProject.Glowi.dto;
 
+
+import com.ecommerceProject.Glowi.entity.CartItems;
+import com.ecommerceProject.Glowi.entity.User;
 import com.ecommerceProject.Glowi.enums.OrderStatus;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.TypeAlias;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
 import java.util.List;
 
-@Document(collection = "orders")
-@TypeAlias("Orders")
 @Data
-public class Order {
+public class OrderDto {
 
-    @Id
     private String id;
 
     private String orderDescription;
@@ -28,9 +24,8 @@ public class Order {
     private Long discount;
     private String trackingId;
 
-    private User user;
+    private String userName;
 
-    private List<CartItems> cartItems;
-
+    private List<CartItemsDto> cartItems;
 
 }
