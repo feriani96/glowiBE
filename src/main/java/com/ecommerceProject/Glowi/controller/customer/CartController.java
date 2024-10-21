@@ -2,8 +2,10 @@ package com.ecommerceProject.Glowi.controller.customer;
 
 import com.ecommerceProject.Glowi.dto.AddProductInCartDto;
 import com.ecommerceProject.Glowi.dto.OrderDto;
+import com.ecommerceProject.Glowi.exceptions.ValidationException;
 import com.ecommerceProject.Glowi.services.customer.cart.CartService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.jaxb.SpringDataJaxb;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -33,6 +35,17 @@ public class CartController {
         } catch (Exception e) {
             // Log the exception details (optional)
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while fetching the cart.");
+        }
+    }
+
+
+    @GetMapping("/coupon/{userId}/{code}")
+    public ResponseEntity<?> applyCoupon(@PathVariable String userId, @PathVariable String code){
+        try {
+            OrderDto orderDto = cartService.applyCoupon(userId, code);
+            return ResponseEntity.ok(orderDto);
+        } catch (ValidationException ex){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
         }
     }
 

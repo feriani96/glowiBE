@@ -10,4 +10,6 @@ public interface CartService {
 
     OrderDto getCartByUserId(String userId);
 
+    OrderDto applyCoupon(String userId, String code);
+
 }
