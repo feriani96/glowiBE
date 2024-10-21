@@ -1,8 +1,5 @@
 package com.ecommerceProject.Glowi.dto;
 
-
-import com.ecommerceProject.Glowi.entity.CartItems;
-import com.ecommerceProject.Glowi.entity.User;
 import com.ecommerceProject.Glowi.enums.OrderStatus;
 import lombok.Data;
 
