@@ -12,7 +12,7 @@ public interface CartService {
 
     OrderDto applyCoupon(String userId, String code);
 
-    OrderDto IncreaseProductQuantity(AddProductInCartDto addProductInCartDto);
+    OrderDto increaseProductQuantity(AddProductInCartDto addProductInCartDto);
 
 
 }

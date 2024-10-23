@@ -150,7 +150,7 @@ public class CartServiceImpl implements CartService {
         return expirationDate != null && currentdate.after(expirationDate);
     }
 
-    public OrderDto IncreaseProductQuantity(AddProductInCartDto addProductInCartDto) {
+    public OrderDto increaseProductQuantity(AddProductInCartDto addProductInCartDto) {
         Order activeOrder = orderRepository.findByUserIdAndOrderStatus(addProductInCartDto.getUserId(), OrderStatus.Pending);
 
         Optional<Product> optionalProduct = productRepository.findById(addProductInCartDto.getProductId());
@@ -165,10 +165,11 @@ public class CartServiceImpl implements CartService {
 
             long priceAsLong = Math.round(product.getPrice());
 
-            cartItem.setQuantity(cartItem.getQuantity() + 1);
 
             activeOrder.setAmount(activeOrder.getAmount() + priceAsLong);
             activeOrder.setTotalAmount(activeOrder.getTotalAmount() + priceAsLong);
+
+            cartItem.setQuantity(cartItem.getQuantity() + 1);
 
             if (activeOrder.getCoupon() != null) {
                 double discountAmount = (activeOrder.getCoupon().getDiscount() / 100.0) * activeOrder.getTotalAmount();

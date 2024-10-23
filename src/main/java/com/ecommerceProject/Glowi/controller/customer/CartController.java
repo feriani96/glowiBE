@@ -50,8 +50,8 @@ public class CartController {
     }
 
     @PostMapping("/addition")
-    public ResponseEntity<OrderDto> IncreaseProductQuantity(@RequestBody AddProductInCartDto addProductInCartDto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(cartService.IncreaseProductQuantity(addProductInCartDto));
+    public ResponseEntity<OrderDto> increaseProductQuantity(@RequestBody AddProductInCartDto addProductInCartDto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(cartService.increaseProductQuantity(addProductInCartDto));
     }
 
 
