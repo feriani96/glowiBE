@@ -1,8 +1,10 @@
 package com.ecommerceProject.Glowi.controller.admin;
 
+import com.ecommerceProject.Glowi.dto.FAQDto;
 import com.ecommerceProject.Glowi.dto.ProductDto;
 import com.ecommerceProject.Glowi.entity.Product;
 import com.ecommerceProject.Glowi.services.admin.adminproduct.AdminProductService;
+import com.ecommerceProject.Glowi.services.admin.faq.FAQService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +20,8 @@ import java.util.List;
 public class AdminProductController {
 
     private final AdminProductService adminProductService;
+
+    private final FAQService faqService;
 
     @PostMapping("products")
     public ResponseEntity<Product> createProduct(
@@ -79,7 +83,13 @@ public class AdminProductController {
             return ResponseEntity.noContent().build();
         }
         return  ResponseEntity.notFound().build();
-
     }
+
+    @PostMapping("/faq/{productId}")
+    public ResponseEntity<FAQDto> postFAQ(@PathVariable String productId, @RequestBody FAQDto faqDto){
+        return ResponseEntity.status(HttpStatus.CREATED).body(faqService.postFAQ(productId, faqDto));
+    }
+
+
 
 }
