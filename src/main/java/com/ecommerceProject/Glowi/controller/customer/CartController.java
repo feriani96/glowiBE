@@ -2,6 +2,7 @@ package com.ecommerceProject.Glowi.controller.customer;
 
 import com.ecommerceProject.Glowi.dto.AddProductInCartDto;
 import com.ecommerceProject.Glowi.dto.OrderDto;
+import com.ecommerceProject.Glowi.dto.PlaceOrderDto;
 import com.ecommerceProject.Glowi.exceptions.ValidationException;
 import com.ecommerceProject.Glowi.services.customer.cart.CartService;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/customer")
 @RequiredArgsConstructor
 public class CartController {
-
     private final CartService cartService;
 
     @PostMapping("cart")
@@ -32,11 +32,9 @@ public class CartController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No items found in cart for this user.");
             }
         } catch (Exception e) {
-            // Log the exception details (optional)
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while fetching the cart.");
         }
     }
-
 
     @GetMapping("/coupon/{userId}/{code}")
     public ResponseEntity<?> applyCoupon(@PathVariable String userId, @PathVariable String code){
@@ -58,5 +56,9 @@ public class CartController {
         return ResponseEntity.status(HttpStatus.CREATED).body(cartService.decreaseProductQuantity(addProductInCartDto));
     }
 
+    @PostMapping("/placeOrder")
+    public ResponseEntity<OrderDto> placeOrder(@RequestBody PlaceOrderDto placeOrderDto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(cartService.placeOrder(placeOrderDto));
+    }
 
 }

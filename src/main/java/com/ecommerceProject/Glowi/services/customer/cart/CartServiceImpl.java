@@ -3,6 +3,7 @@ package com.ecommerceProject.Glowi.services.customer.cart;
 import com.ecommerceProject.Glowi.dto.AddProductInCartDto;
 import com.ecommerceProject.Glowi.dto.CartItemsDto;
 import com.ecommerceProject.Glowi.dto.OrderDto;
+import com.ecommerceProject.Glowi.dto.PlaceOrderDto;
 import com.ecommerceProject.Glowi.entity.*;
 import com.ecommerceProject.Glowi.enums.OrderStatus;
 import com.ecommerceProject.Glowi.exceptions.ValidationException;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -234,5 +236,32 @@ public class CartServiceImpl implements CartService {
         return null;
     }
 
+    public OrderDto placeOrder(PlaceOrderDto placeOrderDto){
+        Order activeOrder = orderRepository.findByUserIdAndOrderStatus(placeOrderDto.getUserId(), OrderStatus.Pending);
+
+        Optional<User> optionalUser = userRepository.findById(placeOrderDto.getUserId());
+
+        if (optionalUser.isPresent()){
+            activeOrder.setOrderDescription(placeOrderDto.getOrderDescription());
+            activeOrder.setAddress(placeOrderDto.getAddress());
+            activeOrder.setDate(new Date());
+            activeOrder.setOrderStatus(OrderStatus.Placed);
+            activeOrder.setTrackingId(UUID.randomUUID().toString());
+
+            orderRepository.save(activeOrder);
+
+            Order order = new Order();
+            order.setAmount(0L);
+            order.setTotalAmount(0L);
+            order.setDiscount(0L);
+            order.setUser(optionalUser.get());
+            order.setOrderStatus(OrderStatus.Pending);
+            orderRepository.save(order);
+
+            return activeOrder.getOrderDto();
+
+        }
+        return null;
+    }
 
 }

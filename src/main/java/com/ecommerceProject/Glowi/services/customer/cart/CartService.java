@@ -2,6 +2,7 @@ package com.ecommerceProject.Glowi.services.customer.cart;
 
 import com.ecommerceProject.Glowi.dto.AddProductInCartDto;
 import com.ecommerceProject.Glowi.dto.OrderDto;
+import com.ecommerceProject.Glowi.dto.PlaceOrderDto;
 import org.springframework.http.ResponseEntity;
 
 public interface CartService {
@@ -15,6 +16,8 @@ public interface CartService {
     OrderDto increaseProductQuantity(AddProductInCartDto addProductInCartDto);
 
     OrderDto decreaseProductQuantity(AddProductInCartDto addProductInCartDto);
+
+    OrderDto placeOrder(PlaceOrderDto placeOrderDto);
 
 
 }
