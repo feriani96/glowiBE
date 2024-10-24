@@ -5,7 +5,6 @@ import com.ecommerceProject.Glowi.dto.OrderDto;
 import com.ecommerceProject.Glowi.exceptions.ValidationException;
 import com.ecommerceProject.Glowi.services.customer.cart.CartService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.jaxb.SpringDataJaxb;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,7 +25,7 @@ public class CartController {
     public ResponseEntity<?> getCartByUserId(@PathVariable String userId) {
         try {
             OrderDto orderDto = cartService.getCartByUserId(userId);
-
+            System.out.println("OrderDto: " + orderDto);
             if (orderDto != null && !orderDto.getCartItems().isEmpty()) {
                 return ResponseEntity.status(HttpStatus.OK).body(orderDto);
             } else {
@@ -54,7 +53,10 @@ public class CartController {
         return ResponseEntity.status(HttpStatus.CREATED).body(cartService.increaseProductQuantity(addProductInCartDto));
     }
 
-
+    @PostMapping("/deduction")
+    public ResponseEntity<OrderDto> decreaseProductQuantity(@RequestBody AddProductInCartDto addProductInCartDto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(cartService.decreaseProductQuantity(addProductInCartDto));
+    }
 
 
 }

@@ -7,6 +7,8 @@ import com.ecommerceProject.Glowi.entity.*;
 import com.ecommerceProject.Glowi.enums.OrderStatus;
 import com.ecommerceProject.Glowi.exceptions.ValidationException;
 import com.ecommerceProject.Glowi.repository.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +21,9 @@ import java.util.stream.Collectors;
 
 @Service
 public class CartServiceImpl implements CartService {
+
+    private static final Logger logger = LoggerFactory.getLogger(CartServiceImpl.class);
+
     @Autowired
     private OrderRepository orderRepository;
     @Autowired
@@ -40,11 +45,10 @@ public class CartServiceImpl implements CartService {
             activeOrder = createNewOrder(user);
         }
 
-        Optional<CartItems> optionalCartItems = cartItemsRepository.findByProductIdAndOrderIdAndUserId(
+        CartItems existingCartItem = cartItemsRepository.findByProductIdAndOrderIdAndUserId(
             addProductInCartDto.getProductId(), activeOrder.getId(), user.getId());
 
-        if (optionalCartItems.isPresent()) {
-            CartItems existingCartItem = optionalCartItems.get();
+        if (existingCartItem != null) {
             existingCartItem.setQuantity(existingCartItem.getQuantity() + 1);
             cartItemsRepository.save(existingCartItem);
             updateOrderTotal(activeOrder, Math.round(existingCartItem.getPrice()));
@@ -54,7 +58,7 @@ public class CartServiceImpl implements CartService {
         Product product = productRepository.findById(addProductInCartDto.getProductId())
             .orElseThrow(() -> new RuntimeException("Product not found"));
 
-        CartItems cartItem = createCartItem(activeOrder, product);
+        CartItems cartItem = createCartItem(activeOrder, product, user);
         cartItemsRepository.save(cartItem);
         long priceAsLong = Math.round(product.getPrice());
 
@@ -63,6 +67,8 @@ public class CartServiceImpl implements CartService {
 
         return ResponseEntity.status(HttpStatus.CREATED).body(cartItem);
     }
+
+
 
     private Order createNewOrder(User user) {
         Order newOrder = new Order();
@@ -79,14 +85,13 @@ public class CartServiceImpl implements CartService {
         order.setAmount(order.getAmount() + price);
     }
 
-    private CartItems createCartItem(Order order, Product product) {
+    private CartItems createCartItem(Order order, Product product, User user) {
         CartItems cartItem = new CartItems();
         cartItem.setProduct(product);
+        cartItem.setUser(user);
         cartItem.setPrice(product.getPrice());
         cartItem.setQuantity(1);
         cartItem.setOrder(order);
-
-
         return cartItem;
     }
 
@@ -104,7 +109,6 @@ public class CartServiceImpl implements CartService {
             .map(cartItem -> {
                 CartItemsDto dto = cartItem.getCartDto();
                 if (dto.getImageUrls() != null && !dto.getImageUrls().isEmpty()) {
-                    // Assurez-vous de récupérer uniquement la première image
                     dto.setMainImageUrl(dto.getImageUrls().get(0));
                 }
                 return dto;
@@ -151,25 +155,67 @@ public class CartServiceImpl implements CartService {
     }
 
     public OrderDto increaseProductQuantity(AddProductInCartDto addProductInCartDto) {
+        logger.info("increaseProductQuantity called for userId: {} and productId: {}", addProductInCartDto.getUserId(), addProductInCartDto.getProductId());
+
         Order activeOrder = orderRepository.findByUserIdAndOrderStatus(addProductInCartDto.getUserId(), OrderStatus.Pending);
+        if (activeOrder == null) {
+            logger.warn("No active order found for userId: {}", addProductInCartDto.getUserId());
+            throw new RuntimeException("No active order found");
+        }
 
-        Optional<Product> optionalProduct = productRepository.findById(addProductInCartDto.getProductId());
+        Product product = productRepository.findById(addProductInCartDto.getProductId())
+            .orElseThrow(() -> {
+                logger.error("Product not found for productId: {}", addProductInCartDto.getProductId());
+                return new RuntimeException("Product not found");
+            });
 
-        Optional<CartItems> optionalCartItems = cartItemsRepository.findByProductIdAndOrderIdAndUserId(
-            addProductInCartDto.getProductId(), activeOrder.getId(), addProductInCartDto.getUserId()
-        );
+        CartItems cartItem = cartItemsRepository.findByProductIdAndOrderIdAndUserId(
+            addProductInCartDto.getProductId(), activeOrder.getId(), addProductInCartDto.getUserId());
 
-        if (optionalProduct.isPresent() && optionalCartItems.isPresent()) {
-            CartItems cartItem = optionalCartItems.get();
-            Product product = optionalProduct.get();
-
+        if (cartItem != null) {
             long priceAsLong = Math.round(product.getPrice());
-
+            logger.info("CartItem found for productId: {}. Current quantity: {}", addProductInCartDto.getProductId(), cartItem.getQuantity());
 
             activeOrder.setAmount(activeOrder.getAmount() + priceAsLong);
             activeOrder.setTotalAmount(activeOrder.getTotalAmount() + priceAsLong);
-
             cartItem.setQuantity(cartItem.getQuantity() + 1);
+            logger.info("New Quantity after increment: {}", cartItem.getQuantity());
+
+            if (activeOrder.getCoupon() != null) {
+                double discountAmount = (activeOrder.getCoupon().getDiscount() / 100.0) * activeOrder.getTotalAmount();
+                double netAmount = activeOrder.getTotalAmount() - discountAmount;
+
+                activeOrder.setAmount((long) netAmount);
+                activeOrder.setDiscount((long) discountAmount);
+                logger.info("Coupon applied. Discount: {}, New Amount: {}", discountAmount, netAmount);
+            }
+
+            cartItemsRepository.save(cartItem);
+            orderRepository.save(activeOrder);
+
+            return activeOrder.getOrderDto();
+        } else {
+            logger.warn("No CartItem found for productId: {} in orderId: {}", addProductInCartDto.getProductId(), activeOrder.getId());
+        }
+
+        return null;
+    }
+
+    public OrderDto decreaseProductQuantity(AddProductInCartDto addProductInCartDto) {
+        Order activeOrder = orderRepository.findByUserIdAndOrderStatus(addProductInCartDto.getUserId(), OrderStatus.Pending);
+
+        Product product = productRepository.findById(addProductInCartDto.getProductId())
+            .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        CartItems cartItem = cartItemsRepository.findByProductIdAndOrderIdAndUserId(
+            addProductInCartDto.getProductId(), activeOrder.getId(), addProductInCartDto.getUserId());
+
+        if (cartItem != null) {
+            long priceAsLong = Math.round(product.getPrice());
+
+            activeOrder.setAmount(activeOrder.getAmount() - priceAsLong);
+            activeOrder.setTotalAmount(activeOrder.getTotalAmount() - priceAsLong);
+            cartItem.setQuantity(cartItem.getQuantity() - 1);
 
             if (activeOrder.getCoupon() != null) {
                 double discountAmount = (activeOrder.getCoupon().getDiscount() / 100.0) * activeOrder.getTotalAmount();
