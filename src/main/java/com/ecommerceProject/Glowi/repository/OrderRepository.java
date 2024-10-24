@@ -14,4 +14,7 @@ public interface OrderRepository extends MongoRepository<Order, String> {
     Order findByUserIdAndOrderStatus(String userId, OrderStatus orderStatus);
 
     List<Order> findAllByOrderStatusIn(List<OrderStatus> orderStatusList);
+
+    List<Order> findByUserIdAndOrderStatusIn(String userId, List<OrderStatus> orderStatus);
+
 }
