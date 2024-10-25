@@ -3,6 +3,7 @@ package com.ecommerceProject.Glowi.controller.admin;
 import com.ecommerceProject.Glowi.dto.FAQDto;
 import com.ecommerceProject.Glowi.dto.ProductDto;
 import com.ecommerceProject.Glowi.entity.Product;
+import com.ecommerceProject.Glowi.repository.ProductRepository;
 import com.ecommerceProject.Glowi.services.admin.adminproduct.AdminProductService;
 import com.ecommerceProject.Glowi.services.admin.faq.FAQService;
 import lombok.RequiredArgsConstructor;
@@ -70,12 +71,6 @@ public class AdminProductController {
         return ResponseEntity.ok(adminProductService.getAllProductByName(name));
     }
 
-    @GetMapping("products/{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable String id){
-        Product product = adminProductService.getProductById(id);
-        return ResponseEntity.ok(product);
-    }
-
     @DeleteMapping("/product/{productId}")
     public  ResponseEntity<Void> deleteProduct(@PathVariable String productId){
         boolean deleted = adminProductService.deleteProduct(productId);
@@ -88,6 +83,27 @@ public class AdminProductController {
     @PostMapping("/faq/{productId}")
     public ResponseEntity<FAQDto> postFAQ(@PathVariable String productId, @RequestBody FAQDto faqDto){
         return ResponseEntity.status(HttpStatus.CREATED).body(faqService.postFAQ(productId, faqDto));
+    }
+
+    @GetMapping("product/{productId}")
+    public ResponseEntity<ProductDto> getProductById(@PathVariable String productId){
+        ProductDto productDto = adminProductService.getProductById(productId);
+        if (productDto != null){
+            return ResponseEntity.ok(productDto);
+        }else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PutMapping("product/{productId}")
+    public ResponseEntity<ProductDto> updateProduct(@PathVariable String productId, @ModelAttribute ProductDto productDto){
+        ProductDto updatedProduct = adminProductService.updateProduct(productId, productDto);
+        if (updatedProduct != null){
+            return ResponseEntity.ok(updatedProduct);
+        }else {
+            return ResponseEntity.notFound().build();
+        }
+
     }
 
 

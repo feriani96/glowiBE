@@ -69,11 +69,8 @@ public class AdminProductServiceImpl implements AdminProductService {
                 if (category != null) {
                     product.setCategory(category);
                 }
-
-                // Create the ProductDto
                 ProductDto productDto = product.getDto();
 
-                // Add image URLs
                 List<String> imgUrls = product.getImgUrls();
                 if (imgUrls != null && !imgUrls.isEmpty()) {
                     List<String> fullImageUrls = imgUrls.stream()
@@ -85,17 +82,6 @@ public class AdminProductServiceImpl implements AdminProductService {
                 return productDto;
             })
             .collect(Collectors.toList());
-    }
-
-    public Product getProductById(String id) {
-        return productRepository.findById(id)
-            .map(product -> {
-                Category category = categoryRepository.findById(product.getCategoryId())
-                    .orElse(null);
-                product.setCategory(category);
-                return product;
-            })
-            .orElseThrow(() -> new IllegalArgumentException("Product not found"));
     }
 
     public List<ProductDto> getAllProductByName(String name) {
@@ -160,4 +146,53 @@ public class AdminProductServiceImpl implements AdminProductService {
             return false;
         }
     }
+
+    public ProductDto getProductById(String productId){
+        Optional<Product> optionalProduct = productRepository.findById(productId);
+
+
+
+        if (optionalProduct.isPresent()) {
+            Product product = optionalProduct.get();
+            Category category = categoryRepository.findById(product.getCategoryId())
+                .orElse(null);
+            product.setCategory(category);
+
+            return product.getDto();
+        } else {
+            throw new IllegalArgumentException("Product not found");
+        }
+    }
+
+    public ProductDto updateProduct(String productId, ProductDto productDto) {
+        Optional<Product> optionalProduct = productRepository.findById(productId);
+        Optional<Category> optionalCategory = categoryRepository.findById(productDto.getCategoryId());
+
+        if (optionalProduct.isPresent() && optionalCategory.isPresent()) {
+            Product product = optionalProduct.get();
+            Category category = optionalCategory.get();
+
+            product.setName(productDto.getName());
+            product.setDescription(productDto.getDescription());
+            product.setPrice(productDto.getPrice());
+            product.setQuantity(productDto.getQuantity());
+            product.setColors(productDto.getColors());
+            product.setAvailableSizes(productDto.getAvailableSizes());
+
+            product.setCategory(category);
+            product.setCategoryName(category.getName());
+            product.setCategoryId(category.getId());
+
+            if (productDto.getImages() != null) {
+                List<String> imgUrls = imageService.saveImageUrls(productDto.getImages());
+                product.setImgUrls(imgUrls);
+            }
+
+            return productRepository.save(product).getDto();
+        } else {
+            return  null;
+        }
+    }
+
+
 }
