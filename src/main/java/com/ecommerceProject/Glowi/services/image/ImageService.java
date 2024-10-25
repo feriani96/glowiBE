@@ -78,20 +78,43 @@ public class ImageService {
 
     // Méthode pour supprimer une image du répertoire
     public boolean deleteImage(String fileName) {
-        Path filePath = imageDirectory.resolve(fileName).normalize();
+        Path targetLocation = this.imageDirectory.resolve(fileName); // L'emplacement de l'image dans le dossier
+
         try {
-            // Vérifie si le fichier existe
-            if (Files.exists(filePath)) {
-                // Supprimer l'image
-                Files.delete(filePath);
-                logger.info("Image supprimée : " + filePath.toString());
+            // Vérifie si le fichier existe et le supprime
+            if (Files.exists(targetLocation)) {
+                Files.delete(targetLocation);
+                logger.info("Image supprimée avec succès : " + targetLocation.toString());
                 return true;
             } else {
-                logger.warning("L'image n'existe pas : " + filePath.toString());
+                logger.warning("Image introuvable pour suppression : " + targetLocation.toString());
+                return false;
             }
         } catch (IOException e) {
             logger.severe("Erreur lors de la suppression de l'image : " + e.getMessage());
+            throw new RuntimeException("Erreur de suppression de l'image", e);
         }
-        return false;
     }
+
+
+    // ImageService.java
+    public List<String> updateImages(List<String> existingImgUrls, List<MultipartFile> newImages) {
+        List<String> updatedImgUrls = new ArrayList<>();
+
+        // Delete existing images if new images are provided
+        if (newImages != null && !newImages.isEmpty()) {
+            for (String oldImgUrl : existingImgUrls) {
+                String fileName = oldImgUrl.substring(oldImgUrl.lastIndexOf("/") + 1);
+                deleteImage(fileName);
+            }
+
+            // Save new images and generate URLs
+            updatedImgUrls = saveImageUrls(newImages);
+        } else {
+            updatedImgUrls.addAll(existingImgUrls);  // Keep old images if no new images provided
+        }
+
+        return updatedImgUrls;
+    }
+
 }

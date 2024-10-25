@@ -7,10 +7,8 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.net.MalformedURLException;
 import java.nio.file.Files;
@@ -29,15 +27,11 @@ public class ImageController {
     @GetMapping("/{filename}")
     public ResponseEntity<Resource> getImage(@PathVariable String filename) {
         try {
-            // Récupération du chemin de l'image
             Path filePath = imageService.getImage(filename);
 
-            // Utilisation de UrlResource pour charger le fichier
             Resource resource = new UrlResource(filePath.toUri());
 
-            // Vérification de la validité de la ressource
             if (resource.exists() && resource.isReadable()) {
-                // Détecte le type MIME de l'image
                 String contentType = Files.probeContentType(filePath);
 
                 if (contentType == null) {
@@ -56,4 +50,6 @@ public class ImageController {
             throw new RuntimeException("Erreur lors de la récupération de l'image : " + e.getMessage());
         }
     }
+
+
 }

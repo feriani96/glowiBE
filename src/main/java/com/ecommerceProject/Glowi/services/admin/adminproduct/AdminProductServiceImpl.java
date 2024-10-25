@@ -9,6 +9,7 @@ import com.ecommerceProject.Glowi.services.image.ImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -122,22 +123,20 @@ public class AdminProductServiceImpl implements AdminProductService {
         if (optionalProduct.isPresent()) {
             Product product = optionalProduct.get();
 
-            // Delete the images associated with the product
             if (product.getImgUrls() != null && !product.getImgUrls().isEmpty()) {
-                // Iterate through the image URLs and delete them via ImageService
                 for (String imgUrl : product.getImgUrls()) {
-                    // Extract the file name from the URL (e.g., "imageName.jpg")
                     String fileName = imgUrl.substring(imgUrl.lastIndexOf("/") + 1);
                     boolean imageDeleted = imageService.deleteImage(fileName);
+
                     if (imageDeleted) {
-                        logger.info("Image deleted: " + fileName);
+                        logger.info("Image supprimée : " + fileName);
                     } else {
-                        logger.warning("Image could not be deleted: " + fileName);
+                        logger.warning("Échec de la suppression de l'image : " + fileName);
                     }
                 }
+                product.setImgUrls(new ArrayList<>());
             }
 
-            // Delete the product from the database
             productRepository.deleteById(id);
             logger.info("Product successfully deleted: " + id);
             return true;
@@ -149,8 +148,6 @@ public class AdminProductServiceImpl implements AdminProductService {
 
     public ProductDto getProductById(String productId){
         Optional<Product> optionalProduct = productRepository.findById(productId);
-
-
 
         if (optionalProduct.isPresent()) {
             Product product = optionalProduct.get();
@@ -184,8 +181,8 @@ public class AdminProductServiceImpl implements AdminProductService {
             product.setCategoryId(category.getId());
 
             if (productDto.getImages() != null) {
-                List<String> imgUrls = imageService.saveImageUrls(productDto.getImages());
-                product.setImgUrls(imgUrls);
+                List<String> updatedImgUrls = imageService.updateImages(product.getImgUrls(), productDto.getImages());
+                product.setImgUrls(updatedImgUrls);
             }
 
             return productRepository.save(product).getDto();
