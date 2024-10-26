@@ -181,27 +181,30 @@ public class AdminProductServiceImpl implements AdminProductService {
             product.setCategoryName(category.getName());
             product.setCategoryId(category.getId());
 
-            if (newImages != null && !newImages.isEmpty()) {
-                List<String> updatedImgUrls = new ArrayList<>();
-                List<String> existingImgUrls = product.getImgUrls();
+            // Gestion des images
+            List<String> updatedImgUrls = new ArrayList<>(product.getImgUrls());
 
+            if (newImages != null && !newImages.isEmpty()) {
                 for (int i = 0; i < newImages.size(); i++) {
                     MultipartFile newImage = newImages.get(i);
 
-                    // Remplacer l'image existante si elle existe, sinon sauvegarder la nouvelle
-                    String updatedUrl;
-                    if (i < existingImgUrls.size()) {
-                        String existingFileName = existingImgUrls.get(i).substring(existingImgUrls.get(i).lastIndexOf("/") + 1);
-                        updatedUrl = imageService.updateImage(existingFileName, newImage);
-                    } else {
-                        // Appeler saveImageUrls avec une liste contenant la nouvelle image
-                        updatedUrl = imageService.saveImageUrls(List.of(newImage)).get(0);
-                    }
-                    updatedImgUrls.add(updatedUrl);
-                }
+                    if (newImage != null && !newImage.isEmpty()) {
+                        String updatedUrl;
 
+                        // Remplacer l'image existante si elle existe, sinon ajouter la nouvelle
+                        if (i < updatedImgUrls.size()) {
+                            String existingFileName = updatedImgUrls.get(i).substring(updatedImgUrls.get(i).lastIndexOf("/") + 1);
+                            updatedUrl = imageService.updateImage(existingFileName, newImage);
+                            updatedImgUrls.set(i, updatedUrl);
+                        } else {
+                            updatedUrl = imageService.saveImageUrls(List.of(newImage)).get(0);
+                            updatedImgUrls.add(updatedUrl);
+                        }
+                    }
+                }
                 product.setImgUrls(updatedImgUrls);
             }
+
 
 
             return productRepository.save(product).getDto();
