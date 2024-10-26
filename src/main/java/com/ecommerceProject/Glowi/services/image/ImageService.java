@@ -20,115 +20,112 @@ public class ImageService {
 
     private final Path imageDirectory;
 
-    // Injection du chemin depuis application.properties
+    // Constructor injecting the path from application.properties
     public ImageService(@Value("${images.directory}") String imageDirectory) {
-        // Résolution du chemin absolu en fonction du répertoire de travail actuel
+        // Resolve the absolute path based on the current working directory
         this.imageDirectory = Paths.get(imageDirectory).toAbsolutePath().normalize();
-        logger.info("Répertoire des images : " + this.imageDirectory.toString());
+        logger.info("Image directory: "  + this.imageDirectory.toString());
 
-        // Vérifier si le répertoire existe, sinon le créer
+        // Check if the directory exists; if not, create it
         try {
             if (!Files.exists(this.imageDirectory)) {
                 Files.createDirectories(this.imageDirectory);
-                logger.info("Répertoire créé : " + this.imageDirectory.toString());
+                logger.info("Directory created: "+ this.imageDirectory.toString());
             }
         } catch (IOException e) {
-            throw new RuntimeException("Erreur lors de la création du répertoire d'images", e);
+            throw new RuntimeException("Error while creating image directory", e);
         }
     }
 
-    // Méthode pour traiter et sauvegarder les URLs des images
+    // Method to process and save image URLs
     public List<String> saveImageUrls(List<MultipartFile> images) {
         List<String> imgUrls = new ArrayList<>();
 
         if (images != null && !images.isEmpty()) {
             for (MultipartFile image : images) {
                 if (!image.isEmpty()) {
-                    // Génération d'un nom unique pour l'image
+                    // Generate a unique name for the image
                     String fileName = UUID.randomUUID().toString() + "_" + image.getOriginalFilename();
-                    logger.info("Enregistrement de l'image : " + fileName);
+                    logger.info("Saving image: " + fileName);
 
-                    // Construit l'URL pour accéder à l'image
+                    // Construct the URL to access the image
                     String imageUrl = "http://localhost:8080/api/images/" + fileName;
                     imgUrls.add(imageUrl);
 
-                    // Sauvegarde physique de l'image à l'emplacement spécifié
+                    // Physically save the image to the specified location
                     Path targetLocation = this.imageDirectory.resolve(fileName);
                     try {
-                        // Sauvegarder l'image sur le disque
+                        // Save the image to disk
                         image.transferTo(targetLocation.toFile());
-                        logger.info("Image sauvegardée à : " + targetLocation.toString());
+                        logger.info("Image saved at: " + targetLocation.toString());
                     } catch (IOException e) {
-                        logger.severe("Erreur lors de la sauvegarde de l'image : " + e.getMessage());
-                        throw new RuntimeException("Impossible de sauvegarder l'image", e);
+                        logger.severe("Error while saving the image: " + e.getMessage());
+                        throw new RuntimeException("Unable to save image", e);
                     }
                 }
             }
         } else {
-            logger.warning("Aucune image à enregistrer");
+            logger.warning("No images to save");
         }
         return imgUrls;
     }
 
     public Path getImage(String filename) {
         Path filePath = imageDirectory.resolve(filename).normalize();
-        System.out.println("Path to image: " + filePath.toString());  // Debugging line
+        System.out.println("Path to image: " + filePath.toString());
         return filePath;
     }
 
-    // Méthode pour supprimer une image du répertoire
+    // Method to delete an image from the directory
     public boolean deleteImage(String fileName) {
-        Path targetLocation = this.imageDirectory.resolve(fileName); // L'emplacement de l'image dans le dossier
+        Path targetLocation = this.imageDirectory.resolve(fileName);
 
         try {
-            // Vérifie si le fichier existe et le supprime
+            // Check if the file exists and delete it
             if (Files.exists(targetLocation)) {
                 Files.delete(targetLocation);
-                logger.info("Image supprimée avec succès : " + targetLocation.toString());
+                logger.info("Image deleted successfully: "  + targetLocation.toString());
                 return true;
             } else {
-                logger.warning("Image introuvable pour suppression : " + targetLocation.toString());
+                logger.warning("Image not found for deletion: " + targetLocation.toString());
                 return false;
             }
         } catch (IOException e) {
-            logger.severe("Erreur lors de la suppression de l'image : " + e.getMessage());
-            throw new RuntimeException("Erreur de suppression de l'image", e);
+            logger.severe("Error while deleting the image: " + e.getMessage());
+            throw new RuntimeException("Error deleting image", e);
         }
     }
 
-
-    // ImageService.java
+    // Method to update an existing image
     public String updateImage(String existingFileName, MultipartFile newImage) {
-        // Chemin de l'image existante
+        // Path of the existing image
         Path existingImagePath = this.imageDirectory.resolve(existingFileName).normalize();
 
-        // Vérifier si l'image existante est présente
+        // Check if the existing image is present
         if (Files.exists(existingImagePath)) {
             try {
-                // Supprimer l'image existante
+                // Delete the existing image
                 Files.delete(existingImagePath);
-                logger.info("Image existante supprimée : " + existingImagePath.toString());
+                logger.info("Existing image deleted: " + existingImagePath.toString());
 
-                // Sauvegarder la nouvelle image au même emplacement
-                String newFileName = UUID.randomUUID().toString() + "_" + newImage.getOriginalFilename();
-                Path targetLocation = this.imageDirectory.resolve(newFileName);
-                newImage.transferTo(targetLocation.toFile());
-                logger.info("Nouvelle image sauvegardée à : " + targetLocation.toString());
+                // Save the new image at the same location
+                newImage.transferTo(existingImagePath.toFile()); // Use the same file name
+                logger.info("New image saved at: "+ existingImagePath.toString());
 
-                // Générer l'URL pour la nouvelle image
-                String newImageUrl = "http://localhost:8080/api/images/" + newFileName;
-                logger.info("URL de l'image mise à jour : " + newImageUrl);
+                // Generate the URL for the new image
+                String newImageUrl = "http://localhost:8080/api/images/" + existingFileName; // Garder le même nom
+                logger.info("Updated image URL: " + newImageUrl);
 
-                // Retourner l'URL de l'image mise à jour pour que vous puissiez la sauvegarder dans la base de données
+                // Return the updated image URL to be saved in the database
                 return newImageUrl;
 
             } catch (IOException e) {
-                logger.severe("Erreur lors de la mise à jour de l'image : " + e.getMessage());
-                throw new RuntimeException("Impossible de mettre à jour l'image", e);
+                logger.severe("Error while updating the image: " + e.getMessage());
+                throw new RuntimeException("Unable to update image", e);
             }
         } else {
-            logger.warning("Image introuvable pour la mise à jour : " + existingFileName);
-            throw new RuntimeException("Image introuvable pour la mise à jour");
+            logger.warning("Image not found for update: "  + existingFileName);
+            throw new RuntimeException("Image not found for update");
         }
     }
 

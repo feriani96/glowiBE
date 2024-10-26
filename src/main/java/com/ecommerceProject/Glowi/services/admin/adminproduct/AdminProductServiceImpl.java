@@ -130,9 +130,9 @@ public class AdminProductServiceImpl implements AdminProductService {
                     boolean imageDeleted = imageService.deleteImage(fileName);
 
                     if (imageDeleted) {
-                        logger.info("Image supprimée : " + fileName);
+                        logger.info("Image deleted : " + fileName);
                     } else {
-                        logger.warning("Échec de la suppression de l'image : " + fileName);
+                        logger.warning("Failed to delete the image: " + fileName);
                     }
                 }
                 product.setImgUrls(new ArrayList<>());
@@ -181,8 +181,8 @@ public class AdminProductServiceImpl implements AdminProductService {
             product.setCategoryName(category.getName());
             product.setCategoryId(category.getId());
 
-            // Gestion des images
-            List<String> updatedImgUrls = new ArrayList<>(product.getImgUrls());
+            // Handle images
+            List<String> updatedImgUrls = (product.getImgUrls() != null) ? new ArrayList<>(product.getImgUrls()) : new ArrayList<>();
 
             if (newImages != null && !newImages.isEmpty()) {
                 for (int i = 0; i < newImages.size(); i++) {
@@ -191,7 +191,7 @@ public class AdminProductServiceImpl implements AdminProductService {
                     if (newImage != null && !newImage.isEmpty()) {
                         String updatedUrl;
 
-                        // Remplacer l'image existante si elle existe, sinon ajouter la nouvelle
+                        // Replace the existing image if it exists; otherwise, add a new one
                         if (i < updatedImgUrls.size()) {
                             String existingFileName = updatedImgUrls.get(i).substring(updatedImgUrls.get(i).lastIndexOf("/") + 1);
                             updatedUrl = imageService.updateImage(existingFileName, newImage);
@@ -204,9 +204,6 @@ public class AdminProductServiceImpl implements AdminProductService {
                 }
                 product.setImgUrls(updatedImgUrls);
             }
-
-
-
             return productRepository.save(product).getDto();
         } else {
             return  null;

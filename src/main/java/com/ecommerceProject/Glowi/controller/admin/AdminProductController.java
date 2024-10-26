@@ -38,14 +38,12 @@ public class AdminProductController {
         @RequestParam(value = "image2", required = false) MultipartFile image2,
         @RequestParam(value = "image3", required = false) MultipartFile image3){
 
-        // Créer une liste pour les images
         List<MultipartFile> images = new ArrayList<>();
         if (image0 != null) images.add(image0);
         if (image1 != null) images.add(image1);
         if (image2 != null) images.add(image2);
         if (image3 != null) images.add(image3);
 
-        // Créer un DTO pour le produit
         ProductDto productDto = new ProductDto();
         productDto.setName(name);
         productDto.setDescription(description);
@@ -110,14 +108,12 @@ public class AdminProductController {
         @RequestParam(value = "image2", required = false) MultipartFile image2,
         @RequestParam(value = "image3", required = false) MultipartFile image3) {
 
-        // Créer une liste pour les nouvelles images
         List<MultipartFile> newImages = new ArrayList<>();
         if (image0 != null) newImages.add(image0);
         if (image1 != null) newImages.add(image1);
         if (image2 != null) newImages.add(image2);
         if (image3 != null) newImages.add(image3);
 
-        // Créer un DTO pour le produit avec les nouvelles informations
         ProductDto productDto = new ProductDto();
         productDto.setName(name);
         productDto.setDescription(description);
@@ -128,7 +124,6 @@ public class AdminProductController {
         productDto.setCategoryId(categoryId);
         productDto.setImages(newImages);
 
-        // Appeler le service pour mettre à jour le produit
         ProductDto updatedProduct = adminProductService.updateProduct(productId, productDto, newImages);
 
         if (updatedProduct != null) {
@@ -137,8 +132,5 @@ public class AdminProductController {
             return ResponseEntity.notFound().build();
         }
     }
-
-
-
 
 }
