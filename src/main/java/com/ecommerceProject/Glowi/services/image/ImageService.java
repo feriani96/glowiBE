@@ -98,23 +98,39 @@ public class ImageService {
 
 
     // ImageService.java
-    public List<String> updateImages(List<String> existingImgUrls, List<MultipartFile> newImages) {
-        List<String> updatedImgUrls = new ArrayList<>();
+    public String updateImage(String existingFileName, MultipartFile newImage) {
+        // Chemin de l'image existante
+        Path existingImagePath = this.imageDirectory.resolve(existingFileName).normalize();
 
-        // Delete existing images if new images are provided
-        if (newImages != null && !newImages.isEmpty()) {
-            for (String oldImgUrl : existingImgUrls) {
-                String fileName = oldImgUrl.substring(oldImgUrl.lastIndexOf("/") + 1);
-                deleteImage(fileName);
+        // Vérifier si l'image existante est présente
+        if (Files.exists(existingImagePath)) {
+            try {
+                // Supprimer l'image existante
+                Files.delete(existingImagePath);
+                logger.info("Image existante supprimée : " + existingImagePath.toString());
+
+                // Sauvegarder la nouvelle image au même emplacement
+                String newFileName = UUID.randomUUID().toString() + "_" + newImage.getOriginalFilename();
+                Path targetLocation = this.imageDirectory.resolve(newFileName);
+                newImage.transferTo(targetLocation.toFile());
+                logger.info("Nouvelle image sauvegardée à : " + targetLocation.toString());
+
+                // Générer l'URL pour la nouvelle image
+                String newImageUrl = "http://localhost:8080/api/images/" + newFileName;
+                logger.info("URL de l'image mise à jour : " + newImageUrl);
+
+                // Retourner l'URL de l'image mise à jour pour que vous puissiez la sauvegarder dans la base de données
+                return newImageUrl;
+
+            } catch (IOException e) {
+                logger.severe("Erreur lors de la mise à jour de l'image : " + e.getMessage());
+                throw new RuntimeException("Impossible de mettre à jour l'image", e);
             }
-
-            // Save new images and generate URLs
-            updatedImgUrls = saveImageUrls(newImages);
         } else {
-            updatedImgUrls.addAll(existingImgUrls);  // Keep old images if no new images provided
+            logger.warning("Image introuvable pour la mise à jour : " + existingFileName);
+            throw new RuntimeException("Image introuvable pour la mise à jour");
         }
-
-        return updatedImgUrls;
     }
+
 
 }

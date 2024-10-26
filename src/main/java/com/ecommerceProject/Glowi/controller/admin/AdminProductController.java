@@ -96,15 +96,48 @@ public class AdminProductController {
     }
 
     @PutMapping("product/{productId}")
-    public ResponseEntity<ProductDto> updateProduct(@PathVariable String productId, @ModelAttribute ProductDto productDto){
-        ProductDto updatedProduct = adminProductService.updateProduct(productId, productDto);
-        if (updatedProduct != null){
+    public ResponseEntity<ProductDto> updateProduct(
+        @PathVariable String productId,
+        @RequestParam("name") String name,
+        @RequestParam("description") String description,
+        @RequestParam("price") float price,
+        @RequestParam("quantity") int quantity,
+        @RequestParam("colors") List<String> colors,
+        @RequestParam("availableSizes") List<String> availableSizes,
+        @RequestParam("categoryId") String categoryId,
+        @RequestParam(value = "image0", required = false) MultipartFile image0,
+        @RequestParam(value = "image1", required = false) MultipartFile image1,
+        @RequestParam(value = "image2", required = false) MultipartFile image2,
+        @RequestParam(value = "image3", required = false) MultipartFile image3) {
+
+        // Créer une liste pour les nouvelles images
+        List<MultipartFile> newImages = new ArrayList<>();
+        if (image0 != null) newImages.add(image0);
+        if (image1 != null) newImages.add(image1);
+        if (image2 != null) newImages.add(image2);
+        if (image3 != null) newImages.add(image3);
+
+        // Créer un DTO pour le produit avec les nouvelles informations
+        ProductDto productDto = new ProductDto();
+        productDto.setName(name);
+        productDto.setDescription(description);
+        productDto.setPrice(price);
+        productDto.setQuantity(quantity);
+        productDto.setColors(colors);
+        productDto.setAvailableSizes(availableSizes);
+        productDto.setCategoryId(categoryId);
+        productDto.setImages(newImages);
+
+        // Appeler le service pour mettre à jour le produit
+        ProductDto updatedProduct = adminProductService.updateProduct(productId, productDto, newImages);
+
+        if (updatedProduct != null) {
             return ResponseEntity.ok(updatedProduct);
-        }else {
+        } else {
             return ResponseEntity.notFound().build();
         }
-
     }
+
 
 
 
