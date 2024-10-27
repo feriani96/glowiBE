@@ -1,7 +1,9 @@
 package com.ecommerceProject.Glowi.controller.customer;
 
 
+import com.ecommerceProject.Glowi.dto.ProductDetailDto;
 import com.ecommerceProject.Glowi.dto.ProductDto;
+import com.ecommerceProject.Glowi.entity.Product;
 import com.ecommerceProject.Glowi.services.customer.CustomerProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -27,5 +29,12 @@ public class CustomerProductController {
     @GetMapping("/search/{name}")
     public ResponseEntity<List<ProductDto>> getAllProductByName(@PathVariable String name){
         return ResponseEntity.ok(customerProductService.getAllProductByTitle(name));
+    }
+
+    @GetMapping("/product/{productId}")
+    public ResponseEntity<ProductDetailDto> getProductDetailById(@PathVariable String productId){
+        ProductDetailDto productDetailDto = customerProductService.getProductDetailById(productId);
+        if (productDetailDto == null) return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(productDetailDto);
     }
 }

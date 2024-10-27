@@ -123,6 +123,7 @@ public class CartServiceImpl implements CartService {
         orderDto.setOrderStatus(activeOrder.getOrderStatus());
         orderDto.setDiscount(activeOrder.getDiscount());
         orderDto.setTotalAmount(activeOrder.getTotalAmount());
+
         orderDto.setCartItems(cartItemsDtosList);
         if(activeOrder.getCoupon() != null){
             orderDto.setCouponName(activeOrder.getCoupon().getName());
