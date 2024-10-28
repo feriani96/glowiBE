@@ -247,7 +247,7 @@ public class CartServiceImpl implements CartService {
             activeOrder.setAddress(placeOrderDto.getAddress());
             activeOrder.setDate(new Date());
             activeOrder.setOrderStatus(OrderStatus.Placed);
-            activeOrder.setTrackingId(UUID.randomUUID().toString());
+            activeOrder.setTrackingId(UUID.randomUUID());
 
             orderRepository.save(activeOrder);
 
@@ -267,6 +267,15 @@ public class CartServiceImpl implements CartService {
 
     public List<OrderDto> getMyPlacedOrders(String userId){
         return orderRepository.findByUserIdAndOrderStatusIn(userId, List.of(OrderStatus.Placed, OrderStatus.Shipped, OrderStatus.Delivered)).stream().map(Order::getOrderDto).collect(Collectors.toList());
+    }
+
+    public OrderDto searchOrderByTrackingId(UUID trackingId){
+        Optional<Order> optionalOrder = orderRepository.findByTrackingId(trackingId);
+
+        if (optionalOrder.isPresent()){
+            return optionalOrder.get().getOrderDto();
+        }
+        return null;
     }
 
 }

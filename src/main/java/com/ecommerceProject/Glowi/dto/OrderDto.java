@@ -5,6 +5,7 @@ import lombok.Data;
 
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 public class OrderDto {
@@ -19,7 +20,7 @@ public class OrderDto {
     private String payment;
     private OrderStatus orderStatus;
     private Long discount;
-    private String trackingId;
+    private UUID trackingId;
 
     private String userName;
 

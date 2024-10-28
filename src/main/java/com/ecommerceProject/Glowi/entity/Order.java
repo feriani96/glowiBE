@@ -10,6 +10,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Document(collection = "orders")
 @TypeAlias("Orders")
@@ -27,7 +28,7 @@ public class Order {
     private String payment;
     private OrderStatus orderStatus;
     private Long discount;
-    private String trackingId;
+    private UUID trackingId;
 
     private User user;
 
