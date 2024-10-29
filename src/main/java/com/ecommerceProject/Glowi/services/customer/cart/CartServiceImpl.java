@@ -239,10 +239,17 @@ public class CartServiceImpl implements CartService {
 
     public OrderDto placeOrder(PlaceOrderDto placeOrderDto){
         Order activeOrder = orderRepository.findByUserIdAndOrderStatus(placeOrderDto.getUserId(), OrderStatus.Pending);
+        if (activeOrder == null) {
+            System.out.println("No pending order found for user: " + placeOrderDto.getUserId());
+            return null;
+        }
+
 
         Optional<User> optionalUser = userRepository.findById(placeOrderDto.getUserId());
 
         if (optionalUser.isPresent()){
+            System.out.println("Order Description: " + placeOrderDto.getOrderDescription());
+
             activeOrder.setOrderDescription(placeOrderDto.getOrderDescription());
             activeOrder.setAddress(placeOrderDto.getAddress());
             activeOrder.setDate(new Date());

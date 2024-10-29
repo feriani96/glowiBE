@@ -6,6 +6,7 @@ import com.ecommerceProject.Glowi.enums.OrderStatus;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -20,4 +21,8 @@ public interface OrderRepository extends MongoRepository<Order, String> {
     List<Order> findByUserIdAndOrderStatusIn(String userId, List<OrderStatus> orderStatus);
 
     Optional<Order> findByTrackingId(UUID trackingId);
+
+    List<Order> findByDateBetweenAndOrderStatus(Date startOfMonth, Date endOfMonth, OrderStatus status);
+
+    Long countByOrderStatus(OrderStatus status);
 }

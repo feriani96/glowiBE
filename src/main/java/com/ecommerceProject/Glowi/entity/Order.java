@@ -1,5 +1,6 @@
 package com.ecommerceProject.Glowi.entity;
 
+import com.ecommerceProject.Glowi.dto.CartItemsDto;
 import com.ecommerceProject.Glowi.dto.OrderDto;
 import com.ecommerceProject.Glowi.enums.OrderStatus;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -46,7 +47,7 @@ public class Order {
         orderDto.setAmount(amount);
         orderDto.setDate(date);
         orderDto.setOrderStatus(orderStatus);
-        orderDto.setUserName(user.getName());
+        orderDto.setUserName(user != null ? user.getName() : null);
         if(coupon != null){
             orderDto.setCouponName(coupon.getName());
         }
