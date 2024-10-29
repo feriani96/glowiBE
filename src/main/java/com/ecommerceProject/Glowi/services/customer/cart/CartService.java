@@ -26,5 +26,7 @@ public interface CartService {
 
     OrderDto searchOrderByTrackingId(UUID trackingId);
 
+    ResponseEntity<?> deleteProductsFromCart(String userId, String productId);
+
 
 }

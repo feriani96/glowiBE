@@ -47,6 +47,15 @@ public class CartServiceImpl implements CartService {
             activeOrder = createNewOrder(user);
         }
 
+        // Vérification de l'existence du produit
+        Product product = productRepository.findById(addProductInCartDto.getProductId())
+            .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        // Validation du prix du produit
+        if (product.getPrice() < 0) {
+            throw new ValidationException("Product price cannot be negative");
+        }
+
         CartItems existingCartItem = cartItemsRepository.findByProductIdAndOrderIdAndUserId(
             addProductInCartDto.getProductId(), activeOrder.getId(), user.getId());
 
@@ -57,9 +66,6 @@ public class CartServiceImpl implements CartService {
             return ResponseEntity.status(HttpStatus.OK).body(existingCartItem);
         }
 
-        Product product = productRepository.findById(addProductInCartDto.getProductId())
-            .orElseThrow(() -> new RuntimeException("Product not found"));
-
         CartItems cartItem = createCartItem(activeOrder, product, user);
         cartItemsRepository.save(cartItem);
         long priceAsLong = Math.round(product.getPrice());
@@ -69,8 +75,6 @@ public class CartServiceImpl implements CartService {
 
         return ResponseEntity.status(HttpStatus.CREATED).body(cartItem);
     }
-
-
 
     private Order createNewOrder(User user) {
         Order newOrder = new Order();
@@ -85,6 +89,9 @@ public class CartServiceImpl implements CartService {
     private void updateOrderTotal(Order order, long price) {
         order.setTotalAmount(order.getTotalAmount() + price);
         order.setAmount(order.getAmount() + price);
+        if (order.getTotalAmount() < 0) {
+            order.setTotalAmount(0L);
+        }
     }
 
     private CartItems createCartItem(Order order, Product product, User user) {
@@ -95,6 +102,43 @@ public class CartServiceImpl implements CartService {
         cartItem.setQuantity(1);
         cartItem.setOrder(order);
         return cartItem;
+    }
+
+    public ResponseEntity<?> deleteProductsFromCart(String userId, String productId) {
+        // Vérifier le format de productId
+        if (productId.startsWith("[") && productId.endsWith("]")) {
+            productId = productId.substring(1, productId.length() - 1).replace("\"", "");
+        }
+
+        // Trouver la commande active de l'utilisateur
+        Order activeOrder = orderRepository.findByUserIdAndOrderStatus(userId, OrderStatus.Pending);
+        if (activeOrder == null) {
+            logger.warn("No active order found for userId: {}", userId);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No active order found.");
+        }
+
+        // Rechercher l'élément de panier correspondant au produit
+        CartItems cartItem = cartItemsRepository.findByProductIdAndOrderIdAndUserId(productId, activeOrder.getId(), userId);
+        if (cartItem != null) {
+            long priceAsLong = Math.round(cartItem.getPrice());
+
+            // Supprimez l'élément du panier
+            cartItemsRepository.delete(cartItem);
+
+            // Mettez à jour le montant total de la commande
+            long newTotalAmount = Math.max(0, activeOrder.getTotalAmount() - (priceAsLong * cartItem.getQuantity()));
+            activeOrder.setTotalAmount(newTotalAmount);
+            activeOrder.setAmount(newTotalAmount);
+
+            // Sauvegarder la commande mise à jour
+            orderRepository.save(activeOrder);
+
+            logger.info("Product with id: {} removed from cart for userId: {}", productId, userId);
+            return ResponseEntity.ok("Product removed from cart successfully.");
+        } else {
+            logger.warn("No CartItem found for productId: {} in orderId: {}", productId, activeOrder.getId());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found in cart.");
+        }
     }
 
     @Override
@@ -124,6 +168,11 @@ public class CartServiceImpl implements CartService {
         orderDto.setDiscount(activeOrder.getDiscount());
         orderDto.setTotalAmount(activeOrder.getTotalAmount());
 
+        // Check for negative total amount
+        if (activeOrder.getTotalAmount() < 0) {
+            activeOrder.setTotalAmount(0L); // Prevent negative amounts
+        }
+
         orderDto.setCartItems(cartItemsDtosList);
         if(activeOrder.getCoupon() != null){
             orderDto.setCouponName(activeOrder.getCoupon().getName());
@@ -142,7 +191,7 @@ public class CartServiceImpl implements CartService {
         double discountAmount = ((coupon.getDiscount() / 100.0) * activeOrder.getTotalAmount());
         double netAmount = activeOrder.getTotalAmount() - discountAmount;
 
-        activeOrder.setAmount((long) netAmount);
+        activeOrder.setAmount(Math.max(0, (long) netAmount));
         activeOrder.setDiscount((long) discountAmount);
         activeOrder.setCoupon(coupon);
 
@@ -171,6 +220,10 @@ public class CartServiceImpl implements CartService {
                 logger.error("Product not found for productId: {}", addProductInCartDto.getProductId());
                 return new RuntimeException("Product not found");
             });
+
+        if (product.getPrice() < 0) {
+            throw new ValidationException("Product price cannot be negative");
+        }
 
         CartItems cartItem = cartItemsRepository.findByProductIdAndOrderIdAndUserId(
             addProductInCartDto.getProductId(), activeOrder.getId(), addProductInCartDto.getUserId());
