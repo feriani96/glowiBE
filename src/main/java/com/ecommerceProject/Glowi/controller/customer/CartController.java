@@ -26,11 +26,9 @@ public class CartController {
     @DeleteMapping("cart/{userId}/{productId}")
     public ResponseEntity<?> deleteProductsFromCart(@PathVariable String userId, @PathVariable String productId) {
         cartService.deleteProductsFromCart(userId, productId);
-        OrderDto updatedCart = cartService.getCartByUserId(userId); // Récupérer l'état mis à jour du panier
-        return ResponseEntity.ok(updatedCart); // Retournez le panier mis à jour
+        OrderDto updatedCart = cartService.getCartByUserId(userId);
+        return ResponseEntity.ok(updatedCart);
     }
-
-
 
     @GetMapping("cart/{userId}")
     public ResponseEntity<?> getCartByUserId(@PathVariable String userId) {

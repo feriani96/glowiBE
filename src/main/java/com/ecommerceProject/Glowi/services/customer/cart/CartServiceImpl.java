@@ -47,11 +47,9 @@ public class CartServiceImpl implements CartService {
             activeOrder = createNewOrder(user);
         }
 
-        // Vérification de l'existence du produit
         Product product = productRepository.findById(addProductInCartDto.getProductId())
             .orElseThrow(() -> new RuntimeException("Product not found"));
 
-        // Validation du prix du produit
         if (product.getPrice() < 0) {
             throw new ValidationException("Product price cannot be negative");
         }
@@ -105,32 +103,26 @@ public class CartServiceImpl implements CartService {
     }
 
     public ResponseEntity<?> deleteProductsFromCart(String userId, String productId) {
-        // Vérifier le format de productId
         if (productId.startsWith("[") && productId.endsWith("]")) {
             productId = productId.substring(1, productId.length() - 1).replace("\"", "");
         }
 
-        // Trouver la commande active de l'utilisateur
         Order activeOrder = orderRepository.findByUserIdAndOrderStatus(userId, OrderStatus.Pending);
         if (activeOrder == null) {
             logger.warn("No active order found for userId: {}", userId);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No active order found.");
         }
 
-        // Rechercher l'élément de panier correspondant au produit
         CartItems cartItem = cartItemsRepository.findByProductIdAndOrderIdAndUserId(productId, activeOrder.getId(), userId);
         if (cartItem != null) {
             long priceAsLong = Math.round(cartItem.getPrice());
 
-            // Supprimez l'élément du panier
             cartItemsRepository.delete(cartItem);
 
-            // Mettez à jour le montant total de la commande
             long newTotalAmount = Math.max(0, activeOrder.getTotalAmount() - (priceAsLong * cartItem.getQuantity()));
             activeOrder.setTotalAmount(newTotalAmount);
             activeOrder.setAmount(newTotalAmount);
 
-            // Sauvegarder la commande mise à jour
             orderRepository.save(activeOrder);
 
             logger.info("Product with id: {} removed from cart for userId: {}", productId, userId);
@@ -140,7 +132,6 @@ public class CartServiceImpl implements CartService {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found in cart.");
         }
     }
-
     @Override
     public OrderDto getCartByUserId(String userId) {
         Order activeOrder = orderRepository.findByUserIdAndOrderStatus(userId, OrderStatus.Pending);
@@ -168,9 +159,8 @@ public class CartServiceImpl implements CartService {
         orderDto.setDiscount(activeOrder.getDiscount());
         orderDto.setTotalAmount(activeOrder.getTotalAmount());
 
-        // Check for negative total amount
         if (activeOrder.getTotalAmount() < 0) {
-            activeOrder.setTotalAmount(0L); // Prevent negative amounts
+            activeOrder.setTotalAmount(0L);
         }
 
         orderDto.setCartItems(cartItemsDtosList);
