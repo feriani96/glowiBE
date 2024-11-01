@@ -29,4 +29,14 @@ public class CustomerCategoryServiceImpl implements CustomerCategoryService{
             .map(Product::getDto)
             .collect(Collectors.toList());
     }
+
+    @Override
+    public List<Category> getFilledCategories() {
+        return categoryRepository.findAll().stream()
+            .filter(category -> !productRepository.findAllByCategoryId(category.getId()).isEmpty())
+            .toList();
+    }
+
+
+
 }

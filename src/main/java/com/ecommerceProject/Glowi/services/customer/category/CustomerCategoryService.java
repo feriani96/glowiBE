@@ -9,4 +9,6 @@ public interface CustomerCategoryService {
     List<ProductDto> getProductsByCategory(String categoryId );
 
     List<Category> getAllCategories();
+
+    List<Category> getFilledCategories();
 }

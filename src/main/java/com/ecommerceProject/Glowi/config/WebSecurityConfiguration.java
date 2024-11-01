@@ -39,7 +39,7 @@ public class WebSecurityConfiguration implements WebMvcConfigurer {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/authenticate", "/sign-up", "/categories", "/order/**").permitAll()
+                        .requestMatchers("/authenticate", "/sign-up", "/categories","/filled-categories", "/order/**").permitAll()
                         .requestMatchers("/api/images/**").permitAll()
                         .requestMatchers("/uploads/**").permitAll()
                     .requestMatchers("/api/customer/ordered-products/**").authenticated()

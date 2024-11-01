@@ -19,7 +19,7 @@ public class CsCategoryController {
 
 
     @GetMapping("/categories")
-    public ResponseEntity<List<Category>> getAllCategories() {
+    public ResponseEntity<List<Category>> getAllCategoriesForCs() {
         List<Category> categories = customerCategoryService.getAllCategories();
         return ResponseEntity.ok(categories);
     }
@@ -28,5 +28,11 @@ public class CsCategoryController {
     public ResponseEntity<List<ProductDto>> getProductsByCategory(@PathVariable String categoryId ) {
         List<ProductDto> products = customerCategoryService.getProductsByCategory(categoryId );
         return ResponseEntity.ok(products);
+    }
+
+    @GetMapping("/filled-categories")
+    public ResponseEntity<List<Category>> getFilledCategories() {
+        List<Category> filledCategories = customerCategoryService.getFilledCategories();
+        return ResponseEntity.ok(filledCategories);
     }
 }
